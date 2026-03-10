@@ -14,16 +14,16 @@ class TreasureWalkScreen extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            // Background Map/Illustration (Placeholder)
+            // Background Map/Illustration
             Positioned.fill(
               child: Container(
-                color: const Color(0xFFF5F5F0), // Light beige background
+                color: const Color(0xFFF5F5F0),
                 child: CustomPaint(
                   painter: MapPainter(),
                 ),
               ),
             ),
-            
+
             // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -35,10 +35,7 @@ class TreasureWalkScreen extends StatelessWidget {
                   ),
                   const Text(
                     'Treasure Walk',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
                   Container(
@@ -46,21 +43,13 @@ class TreasureWalkScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                        ),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
                     ),
                     child: Row(
                       children: [
                         Icon(Icons.star, color: Colors.orange.shade400, size: 16),
                         const SizedBox(width: 4),
-                        const Text(
-                          '1,250',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
+                        const Text('1,250', style: TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -77,13 +66,7 @@ class TreasureWalkScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, 10))],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -97,29 +80,15 @@ class TreasureWalkScreen extends StatelessWidget {
                           children: [
                             Text(
                               'ACTIVE DISCOVERY',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey.shade600,
-                                letterSpacing: 1.2,
-                              ),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade600, letterSpacing: 1.2),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              'The Hidden Mural',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            const Text('The Hidden Mural', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                           ],
                         ),
                         Container(
                           padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            shape: BoxShape.circle,
-                          ),
+                          decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
                           child: const Icon(Icons.arrow_forward_ios, size: 16),
                         ),
                       ],
@@ -127,20 +96,14 @@ class TreasureWalkScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+                      decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(15)),
                       child: Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
+                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                             child: SvgPicture.asset(
-                              AppAssets.tripIcon,
+                              AppAssets.tripIcon, // Ensure this SVG exists
                               height: 20,
                               colorFilter: const ColorFilter.mode(Color(0xFF6D8B6D), BlendMode.srcIn),
                             ),
@@ -150,14 +113,8 @@ class TreasureWalkScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Location',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                                ),
-                                Text(
-                                  'Al-Muizz Street, Historic Cairo',
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                ),
+                                Text('Location', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                Text('Al-Muizz Street, Historic Cairo', style: TextStyle(fontWeight: FontWeight.w600)),
                               ],
                             ),
                           ),
@@ -167,10 +124,7 @@ class TreasureWalkScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+                      decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(15)),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -191,27 +145,21 @@ class TreasureWalkScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6D8B6D),
                         minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleType.values.isNotEmpty ? RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ) : null,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                         elevation: 0,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SvgPicture.asset(
-                            AppAssets.cameraIcon,
+                            AppAssets.cameraIcon, // Ensure this SVG exists
                             height: 20,
                             colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                           ),
                           const SizedBox(width: 10),
                           const Text(
                             'Verify with Camera',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -227,10 +175,7 @@ class TreasureWalkScreen extends StatelessWidget {
   }
 }
 
-class RoundedRectangleType {
-  static var values;
-}
-
+// الكلاس ده كان فيه مشكلة عندك وصلحته (extends CustomPainter بدل mixin)
 class MapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -251,15 +196,11 @@ class MapPainter extends CustomPainter {
         size.width * 0.7, size.height * 0.7,
       );
 
-    // Draw dashed path
     _drawDashedPath(canvas, path, paint);
 
-    // Draw points
     final pointPaint = Paint()..color = const Color(0xFF6D8B6D).withOpacity(0.5);
     canvas.drawCircle(Offset(size.width * 0.45, size.height * 0.25), 25, pointPaint);
     canvas.drawCircle(Offset(size.width * 0.65, size.height * 0.35), 35, pointPaint);
-
-    // Labels for points could be added with TextPainter
   }
 
   void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
