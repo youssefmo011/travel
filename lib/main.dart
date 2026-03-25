@@ -6,10 +6,10 @@ import 'package:untitled1/ui/home_screen/tabs_screen/chat_screen/chat_screen.dar
 import 'package:untitled1/ui/home_screen/tabs_screen/explore_screen/explore_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/profile_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_screen.dart';
-import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/treasure_walk_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/trip_screen.dart';
 import 'package:untitled1/ui/login_screen/login_screen.dart';
 import 'package:untitled1/ui/register_screen/register_screen.dart';
+
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -55,8 +55,6 @@ class MyApp extends StatelessWidget {
         ProfileScreen.routeName: (context) => const ProfileScreen(),
         QuizScreen.routeName: (context) => const QuizScreen(),
         TripScreen.routeName: (context) => const TripScreen(),
-        // السطر ده هو اللي بيربط الزرار بالصفحة
-        TreasureWalkScreen.routeName: (context) => const TreasureWalkScreen(),
       },
     );
   }
