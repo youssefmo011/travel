@@ -23,4 +23,5 @@ class AppAssets {
   static const String photoTravel = "${_basePath}photo_travel.webp";
   static const String profilePhoto = "${_basePath}profile_photo.jpg";
   static const String storyPhoto = "${_basePath}story_photo.jpg";
+  static const String onboarding = "${_basePath}onboarding.png";
 }

@@ -5,6 +5,10 @@ import 'package:untitled1/ui/home_screen/home_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/chat_screen/chat_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/explore_screen/explore_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/profile_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_analysis_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_friday_night_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_question_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_results_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/trip_screen.dart';
 import 'package:untitled1/ui/login_screen/login_screen.dart';
@@ -47,6 +51,10 @@ class MyApp extends StatelessWidget {
         ExploreScreen.routeName: (context) => const ExploreScreen(),
         ProfileScreen.routeName: (context) => const ProfileScreen(),
         QuizScreen.routeName: (context) => const QuizScreen(),
+        QuizQuestionScreen.routeName: (context) => const QuizQuestionScreen(),
+        QuizFridayNightScreen.routeName: (context) => const QuizFridayNightScreen(),
+        QuizAnalysisScreen.routeName: (context) => const QuizAnalysisScreen(),
+        QuizResultsScreen.routeName: (context) => const QuizResultsScreen(),
         TripScreen.routeName: (context) => const TripScreen(),
       },
     );
