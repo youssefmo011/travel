@@ -12,69 +12,69 @@ class QuizFridayNightScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFCF9), // Light cream background
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
-                  ),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey.shade300),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios, size: 20),
                     ),
-                    child: const Center(
-                      child: Text(
-                        '4/5',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.secondary,
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '4/5',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.secondary,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: Divider(thickness: 2, color: AppColors.primary),
-            ),
-            const SizedBox(height: 40),
-            const Text(
-              'TRAVEL DNA QUIZ',
-              style: TextStyle(
-                fontSize: 12,
-                letterSpacing: 2,
-                color: AppColors.textGrey,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40.0),
-              child: Text(
-                'How do you usually like to spend your Friday nights?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.secondary,
-                  height: 1.2,
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 40),
-            Expanded(
-              child: Padding(
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
+                child: Divider(thickness: 2, color: AppColors.primary),
+              ),
+              const SizedBox(height: 40),
+              const Text(
+                'TRAVEL DNA QUIZ',
+                style: TextStyle(
+                  fontSize: 12,
+                  letterSpacing: 2,
+                  color: AppColors.textGrey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 40.0),
+                child: Text(
+                  'How do you usually like to spend your Friday nights?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.secondary,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40.0),
                 child: Column(
                   children: [
@@ -85,32 +85,32 @@ class QuizFridayNightScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-            // Bottom decoration and text
-            Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                SizedBox(
-                  height: 150,
-                  width: double.infinity,
-                  child: CustomPaint(
-                    painter: BackgroundDecorationPainter(),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 40.0),
-                  child: Text(
-                    'Your preferences help us craft the perfect trip...',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textGrey,
-                      fontStyle: FontStyle.italic,
+              // Bottom decoration and text
+              Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  SizedBox(
+                    height: 150,
+                    width: double.infinity,
+                    child: CustomPaint(
+                      painter: BackgroundDecorationPainter(),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 40.0),
+                    child: Text(
+                      'Your preferences help us craft the perfect trip...',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textGrey,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

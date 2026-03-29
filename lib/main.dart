@@ -3,19 +3,24 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled1/ui/home_screen/home_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/chat_screen/chat_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/chat_screen/chat_details_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/explore_screen/explore_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/profile_screen.dart';
-import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_analysis_screen.dart';
-import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_friday_night_screen.dart';
-import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_question_screen.dart';
-import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_results_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/personal_info_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/notifications_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/travel_history_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/favorites_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/help_support_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_question_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_analysis_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_results_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/trip_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/treasure_walk_screen.dart';
 import 'package:untitled1/ui/login_screen/login_screen.dart';
 import 'package:untitled1/ui/onboarding/onboarding_screen.dart';
 import 'package:untitled1/ui/register_screen/register_screen.dart';
 import 'package:untitled1/ui/splash_screen/splash_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'firebase_options.dart';
 
@@ -39,7 +44,6 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      // Splash screen is now the starting point
       home: const SplashScreen(),
       routes: {
         SplashScreen.routeName: (context) => const SplashScreen(),
@@ -48,37 +52,20 @@ class MyApp extends StatelessWidget {
         LoginScreen.routeName: (context) => const LoginScreen(),
         RegisterScreen.routeName: (context) => const RegisterScreen(),
         ChatScreen.routeName: (context) => const ChatScreen(),
+        ChatDetailsScreen.routeName: (context) => const ChatDetailsScreen(),
         ExploreScreen.routeName: (context) => const ExploreScreen(),
         ProfileScreen.routeName: (context) => const ProfileScreen(),
+        PersonalInfoScreen.routeName: (context) => const PersonalInfoScreen(),
+        NotificationsScreen.routeName: (context) => const NotificationsScreen(),
+        TravelHistoryScreen.routeName: (context) => const TravelHistoryScreen(),
+        FavoritesScreen.routeName: (context) => const FavoritesScreen(),
+        HelpSupportScreen.routeName: (context) => const HelpSupportScreen(),
         QuizScreen.routeName: (context) => const QuizScreen(),
         QuizQuestionScreen.routeName: (context) => const QuizQuestionScreen(),
-        QuizFridayNightScreen.routeName: (context) => const QuizFridayNightScreen(),
         QuizAnalysisScreen.routeName: (context) => const QuizAnalysisScreen(),
         QuizResultsScreen.routeName: (context) => const QuizResultsScreen(),
         TripScreen.routeName: (context) => const TripScreen(),
-      },
-    );
-  }
-}
-
-// Logic to check authentication after Splash/Onboarding
-class AuthWrapper extends StatelessWidget {
-  const AuthWrapper({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        if (snapshot.hasData) {
-          return const HomeScreen();
-        }
-        return const LoginScreen();
+        TreasureWalkScreen.routeName: (context) => const TreasureWalkScreen(),
       },
     );
   }

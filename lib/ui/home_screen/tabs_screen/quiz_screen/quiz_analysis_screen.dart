@@ -11,16 +11,29 @@ class QuizAnalysisScreen extends StatefulWidget {
   State<QuizAnalysisScreen> createState() => _QuizAnalysisScreenState();
 }
 
-class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> {
+class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
   @override
   void initState() {
     super.initState();
-    // Navigate to results after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+
+    // Navigate to results after 4 seconds to give more time for the animation
+    Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
         Navigator.pushReplacementNamed(context, QuizResultsScreen.routeName);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -56,12 +69,15 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> {
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                  RotationTransition(
+                    turns: _controller,
+                    child: Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                      ),
                     ),
                   ),
                   Container(
@@ -89,7 +105,13 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> {
                   color: AppColors.secondary,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 24),
+              // علامة التحميل (Loading Indicator)
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.secondary),
+                strokeWidth: 3,
+              ),
+              const SizedBox(height: 24),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 40.0),
                 child: Text(
@@ -101,30 +123,6 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> {
                     height: 1.5,
                   ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              // Dots indicator
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.4), shape: BoxShape.circle),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.4), shape: BoxShape.circle),
-                  ),
-                ],
               ),
               const Spacer(),
               // Insight Card
