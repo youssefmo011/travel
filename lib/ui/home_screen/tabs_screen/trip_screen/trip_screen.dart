@@ -1,259 +1,180 @@
 import 'package:flutter/material.dart';
-import 'package:untitled1/core/assets/app_assets.dart';
-import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/treasure_walk_screen.dart';
+import 'treasure_walk_screen.dart';
+import '../explore_screen/explore_screen.dart'; // تأكد من أن مسار ملف الـ Explore صحيح لديك
 
-class TripScreen extends StatefulWidget {
-  static const String routeName = 'trip';
-
+class TripScreen extends StatelessWidget {
+  static const String routeName = '/trip';
   const TripScreen({super.key});
 
   @override
-  State<TripScreen> createState() => _TripScreenState();
-}
-
-class _TripScreenState extends State<TripScreen> {
-  bool isPastJourneys = true;
-
-  @override
   Widget build(BuildContext context) {
+    // بيانات تجريبية لرحلة نشطة لربط الصفحات ببعضها
+    final VibeLocation activeTrip = VibeLocation(
+      title: "Alpine Escape",
+      location: "ZERMATT, SWITZERLAND",
+      imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000",
+      description: "Your scheduled retreat to the Swiss Alps.",
+      distance: "15km away",
+      rating: 5.0,
+    );
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFFDFCF9),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        title: const Text("My Journeys",
+            style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1B2612))),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.map, color: Colors.white, size: 18),
-          ),
-        ),
-        title: const Text(
-          'Travel Me',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
+        // إضافة أيقونة بسيطة في الـ AppBar لتعطي شكلاً احترافياً
         actions: [
           IconButton(
+            icon: const Icon(Icons.history, color: Color(0xFF6B8E6B)),
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.settings_outlined, color: Colors.black),
-          ),
+          )
         ],
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => isPastJourneys = true),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: isPastJourneys ? Colors.white : const Color(0xFFF5F5F5),
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: isPastJourneys
-                                  ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]
-                                  : [],
-                              border: isPastJourneys ? Border.all(color: Colors.grey.shade100) : null,
-                            ),
-                            child: Text(
-                              'Past Journeys',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontWeight: isPastJourneys ? FontWeight.bold : FontWeight.normal,
-                                color: isPastJourneys ? Colors.black : Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => isPastJourneys = false),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: !isPastJourneys ? Colors.white : const Color(0xFFF5F5F5),
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: !isPastJourneys
-                                  ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))]
-                                  : [],
-                              border: !isPastJourneys ? Border.all(color: Colors.grey.shade100) : null,
-                            ),
-                            child: Text(
-                              'Upcoming',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontWeight: !isPastJourneys ? FontWeight.bold : FontWeight.normal,
-                                color: !isPastJourneys ? Colors.black : Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  const Text('Memory Lane', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  const Text('Relive your favorite moments and stories.', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                  const SizedBox(height: 30),
-                  if (isPastJourneys)
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          children: [
-                            _buildTimelinePoint(true),
-                            _buildTimelineLine(160),
-                            _buildTimelinePoint(true),
-                            _buildTimelineLine(160),
-                            _buildTimelinePoint(false, isSmall: true),
-                          ],
-                        ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: Column(
-                            children: [
-                              _buildTripCard(
-                                image: AppAssets.photoTravel, // Ensure this asset exists
-                                date: 'OCT 12',
-                                title: 'Autumn in Kyoto',
-                                subtitle: 'Ancient temples and',
-                                mood: 'Inspired',
-                                moodIcon: Icons.camera_alt,
-                              ),
-                              const SizedBox(height: 25),
-                              _buildTripCard(
-                                image: AppAssets.storyPhoto, // Ensure this asset exists
-                                date: 'AUG 05',
-                                title: 'Bali Retreat',
-                                subtitle: 'Morning yoga and vibrant',
-                                mood: 'Radiant',
-                                moodIcon: Icons.wb_sunny_outlined,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.only(top: 50),
-                        child: Text('No upcoming journeys yet.', style: TextStyle(color: Colors.grey)),
-                      ),
-                    ),
-                  const SizedBox(height: 140),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 120,
-            left: 24,
-            right: 24,
-            child: ElevatedButton(
-              onPressed: () {
-                // الكود ده هو اللي بيفتح صفحة الكنز
-                Navigator.pushNamed(context, TreasureWalkScreen.routeName);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6D8B6D),
-                minimumSize: const Size(double.infinity, 64),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(35)),
-                elevation: 0,
-              ),
-              child: const Text(
-                'TREASURE WALK',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.2),
-              ),
-            ),
-          ),
-        ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // قسم الرحلة النشطة
+            const Text("ACTIVE EXPEDITION",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
+            const SizedBox(height: 15),
+            _buildActiveTripCard(context, activeTrip),
+
+            const SizedBox(height: 35),
+
+            // قسم الرحلات القادمة
+            const Text("UPCOMING VIBES",
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
+            const SizedBox(height: 15),
+
+            // تم تصحيح الأيقونة هنا لتصبح self_improvement
+            _buildUpcomingItem("Tokyo Street Hunt", "24 May 2026", Icons.map_outlined),
+            _buildUpcomingItem("Kyoto Zen Walk", "12 June 2026", Icons.self_improvement),
+            _buildUpcomingItem("Desert Safari", "05 July 2026", Icons.wb_sunny_outlined),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTimelinePoint(bool isActive, {bool isSmall = false}) {
+  Widget _buildActiveTripCard(BuildContext context, VibeLocation vibe) {
     return Container(
-      width: isSmall ? 10 : 28,
-      height: isSmall ? 10 : 28,
-      decoration: BoxDecoration(color: isActive ? const Color(0xFF6D8B6D) : Colors.grey.shade300, shape: BoxShape.circle),
-      child: isActive && !isSmall ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
-    );
-  }
-
-  Widget _buildTimelineLine(double height) {
-    return Container(width: 2, height: height, color: Colors.grey.shade100, margin: const EdgeInsets.symmetric(vertical: 4));
-  }
-
-  Widget _buildTripCard({required String image, required String date, required String title, required String subtitle, required String mood, required IconData moodIcon}) {
-    return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 10))],
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          ClipRRect(borderRadius: BorderRadius.circular(100), child: Image.asset(image, width: 70, height: 70, fit: BoxFit.cover)),
-          const SizedBox(width: 16),
-          Expanded(
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+                child: Image.network(vibe.imageUrl, height: 200, width: double.infinity, fit: BoxFit.cover),
+              ),
+              Positioned(
+                top: 15,
+                left: 15,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6B8E6B),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text("ONGOING",
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(vibe.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 5),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey),
-                        const SizedBox(width: 6),
-                        Text(date, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
-                      child: const Text('COMPLETED', style: TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold)),
-                    ),
+                    const Icon(Icons.location_on, color: Colors.grey, size: 14),
+                    const SizedBox(width: 5),
+                    Text(vibe.location, style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: const Color(0xFF6D8B6D).withOpacity(0.1), shape: BoxShape.circle),
-                      child: Icon(moodIcon, size: 16, color: const Color(0xFF6D8B6D)),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(mood, style: const TextStyle(fontSize: 14, color: Colors.grey)),
-                  ],
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => TreasureWalkScreen(vibe: vibe)),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6B8E6B),
+                    minimumSize: const Size(double.infinity, 55),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    elevation: 0,
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text("RESUME JOURNEY", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      SizedBox(width: 10),
+                      Icon(Icons.arrow_forward, color: Colors.white, size: 18),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUpcomingItem(String title, String date, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F0E8),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: const Color(0xFF6B8E6B), size: 22),
+          ),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                const SizedBox(height: 2),
+                Text(date, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right, color: Colors.grey),
         ],
       ),
     );
