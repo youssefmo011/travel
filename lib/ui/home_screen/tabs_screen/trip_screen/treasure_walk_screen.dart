@@ -1,223 +1,197 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:untitled1/core/assets/app_assets.dart';
 
-class TreasureWalkScreen extends StatelessWidget {
-  static const String routeName = 'treasure_walk';
+class TreasureWalkScreen extends StatefulWidget {
+  static const String routeName = '/treasure-walk';
 
-  const TreasureWalkScreen({super.key});
+  // استقبال البيانات (Vibe) من الصفحة السابقة
+  final dynamic vibe;
+
+  const TreasureWalkScreen({super.key, this.vibe});
+
+  @override
+  State<TreasureWalkScreen> createState() => _TreasureWalkScreenState();
+}
+
+class _TreasureWalkScreenState extends State<TreasureWalkScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Background Map/Illustration
-            Positioned.fill(
-              child: Container(
-                color: const Color(0xFFF5F5F0),
-                child: CustomPaint(
-                  painter: MapPainter(),
-                ),
-              ),
-            ),
+    // استخراج البيانات مع تأمين القيم الافتراضية
+    final String title = widget.vibe?.title ?? "Unknown Destination";
+    final String location = widget.vibe?.location ?? "Point B";
+    final String distance = widget.vibe?.distance ?? "Calculating...";
+    final String imageUrl = widget.vibe?.imageUrl ?? "https://images.unsplash.com/photo-1524661135-423995f22d0b";
 
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
+    // حساب وقت تقديري بناءً على المسافة (مثال منطقي)
+    final String travelTime = "Approx. 25 mins";
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAF8), // لون خلفية هادئ ومريح
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text("Expedition Details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: Column(
+        children: <Widget>[
+          const SizedBox(height: 20),
+
+          // 1. عرض المسار بشكل نصي ومنطقي (من أين إلى أين)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: FadeTransition(
+              opacity: _animation,
+              child: Column(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
-                  ),
-                  const Text(
-                    'Treasure Walk',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.orange.shade400, size: 16),
-                        const SizedBox(width: 4),
-                        const Text('1,250', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  ),
+                  _buildRouteStep(Icons.my_location, "Your Current Location", "Point A", isLast: false),
+                  _buildRouteStep(Icons.location_on, title, location, isLast: true),
                 ],
               ),
             ),
+          ),
 
-            // Card at the bottom
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                margin: const EdgeInsets.all(20),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, 10))],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'ACTIVE DISCOVERY',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade600, letterSpacing: 1.2),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text('The Hidden Mural', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: Colors.grey.shade100, shape: BoxShape.circle),
-                          child: const Icon(Icons.arrow_forward_ios, size: 16),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(15)),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                            child: SvgPicture.asset(
-                              AppAssets.tripIcon, // Ensure this SVG exists
-                              height: 20,
-                              colorFilter: const ColorFilter.mode(Color(0xFF6D8B6D), BlendMode.srcIn),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Location', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                                Text('Al-Muizz Street, Historic Cairo', style: TextStyle(fontWeight: FontWeight.w600)),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(15)),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.grey.shade400, size: 20),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Text(
-                              'Find the mosaic tiles near the ancient archway. Snap a clear photo to verify and claim your treasure!',
-                              style: TextStyle(fontSize: 13, color: Colors.grey),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6D8B6D),
-                        minimumSize: const Size(double.infinity, 56),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            AppAssets.cameraIcon, // Ensure this SVG exists
-                            height: 20,
-                            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                          ),
-                          const SizedBox(width: 10),
-                          const Text(
-                            'Verify with Camera',
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          const Spacer(),
+
+          // 2. بطاقة معلومات الرحلة (الوقت والمسافة)
+          _buildInfoStats(distance, travelTime),
+
+          // 3. اللوحة السفلية النهائية
+          _buildBottomCard(title, location, distance, imageUrl),
+        ],
       ),
     );
   }
-}
 
-// الكلاس ده كان فيه مشكلة عندك وصلحته (extends CustomPainter بدل mixin)
-class MapPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.grey.shade300
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final path = Path()
-      ..moveTo(size.width * 0.2, size.height * 0.4)
-      ..quadraticBezierTo(
-        size.width * 0.5, size.height * 0.2,
-        size.width * 0.8, size.height * 0.3,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.9, size.height * 0.5,
-        size.width * 0.7, size.height * 0.7,
-      );
-
-    _drawDashedPath(canvas, path, paint);
-
-    final pointPaint = Paint()..color = const Color(0xFF6D8B6D).withOpacity(0.5);
-    canvas.drawCircle(Offset(size.width * 0.45, size.height * 0.25), 25, pointPaint);
-    canvas.drawCircle(Offset(size.width * 0.65, size.height * 0.35), 35, pointPaint);
+  // ودجت لعرض خطوات الطريق (بدل الخطوط المرسومة)
+  Widget _buildRouteStep(IconData icon, String mainText, String subText, {bool isLast = false}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isLast ? const Color(0xFF6B8E6B) : Colors.grey[300],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: isLast ? Colors.white : Colors.grey[600], size: 20),
+            ),
+            if (!isLast)
+              Container(
+                width: 2,
+                height: 50,
+                color: Colors.grey[300],
+              ),
+          ],
+        ),
+        const SizedBox(width: 15),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(mainText, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isLast ? Colors.black : Colors.grey[600])),
+              Text(subText, style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
-  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
-    const dashWidth = 10.0;
-    const dashSpace = 5.0;
-    double distance = 0.0;
-    for (final pathMetric in path.computeMetrics()) {
-      while (distance < pathMetric.length) {
-        canvas.drawPath(
-          pathMetric.extractPath(distance, distance + dashWidth),
-          paint,
-        );
-        distance += dashWidth + dashSpace;
-      }
-    }
+  // ودجت لعرض إحصائيات الرحلة بشكل جمالي
+  Widget _buildInfoStats(String dist, String time) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      child: Row(
+        children: [
+          Expanded(child: _infoItem(Icons.directions_walk, dist, "Distance")),
+          Container(width: 1, height: 40, color: Colors.grey[200]),
+          Expanded(child: _infoItem(Icons.access_time, time, "Duration")),
+        ],
+      ),
+    );
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  Widget _infoItem(IconData icon, String value, String label) {
+    return Column(
+      children: [
+        Icon(icon, color: const Color(0xFF6B8E6B), size: 24),
+        const SizedBox(height: 5),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+      ],
+    );
+  }
+
+  Widget _buildBottomCard(String title, String loc, String dist, String img) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: <BoxShadow>[
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              CircleAvatar(radius: 28, backgroundImage: NetworkImage(img)),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(loc, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 25),
+          ElevatedButton(
+            onPressed: () {
+              // هنا يمكنك إضافة منطق لبدء الرحلة فعلياً
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Starting your journey to $title...")),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6B8E6B),
+              minimumSize: const Size(double.infinity, 60),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              elevation: 0,
+            ),
+            child: const Text("CONFIRM & START", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
 }

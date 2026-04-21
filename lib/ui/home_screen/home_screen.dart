@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     List<Widget> tabs = [
       HomeTab(onTabChanged: _onTabChanged),
-      const ExploreScreen(),
+       ExploreScreen(),
       const TripScreen(),
       const QuizScreen(),
       const ProfileScreen(),

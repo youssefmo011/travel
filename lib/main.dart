@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:untitled1/ui/home_screen/home_screen.dart';
@@ -26,9 +25,11 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
@@ -41,10 +42,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Travel App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF6B8E6B)),
         useMaterial3: true,
       ),
       home: const SplashScreen(),
+
       routes: {
         SplashScreen.routeName: (context) => const SplashScreen(),
         OnboardingScreen.routeName: (context) => const OnboardingScreen(),
@@ -64,8 +66,16 @@ class MyApp extends StatelessWidget {
         QuizQuestionScreen.routeName: (context) => const QuizQuestionScreen(),
         QuizAnalysisScreen.routeName: (context) => const QuizAnalysisScreen(),
         QuizResultsScreen.routeName: (context) => const QuizResultsScreen(),
+
+        // تعديل TripScreen لضمان عدم حدوث خطأ Null
         TripScreen.routeName: (context) => const TripScreen(),
-        TreasureWalkScreen.routeName: (context) => const TreasureWalkScreen(),
+
+        // تعديل TreasureWalkScreen ليكون أكثر أماناً
+        TreasureWalkScreen.routeName: (context) {
+          final Object? args = ModalRoute.of(context)?.settings.arguments;
+          // تمرير الـ args مهما كانت قيمتها، والمعالجة تتم داخل الصفحة
+          return TreasureWalkScreen(vibe: args);
+        },
       },
     );
   }
