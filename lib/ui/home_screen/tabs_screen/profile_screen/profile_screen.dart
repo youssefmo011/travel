@@ -121,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 20),
                 _buildProfileHeader(userName, user?.email, profileImageUrl, travelVibe),
                 const SizedBox(height: 30),
-                _buildStatsSection(),
+
                 const SizedBox(height: 30),
                 _buildProfileMenu(context),
                 const SizedBox(height: 40),
@@ -199,27 +199,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _StatItem(label: 'Trips', value: '12'),
-          _VerticalDivider(),
-          _StatItem(label: 'Photos', value: '148'),
-          _VerticalDivider(),
-          _StatItem(label: 'Rewards', value: '2.5k'),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildProfileMenu(BuildContext context) {
     return Padding(

@@ -6,6 +6,8 @@ class AppAssets {
   static const String tripIcon = "${_basePath}map_icon.svg";
   static const String quizIcon = "${_basePath}quiz_icon.svg";
   static const String profileIcon = "${_basePath}profile_icon.svg";
+  static const String addIcon2 = "${_basePath}add icon 2.svg";
+  static const String streakIcon = "${_basePath}streak.svg";
   
   // New icons from assets
   static const String lockIcon = "${_basePath}lock_icon.svg";

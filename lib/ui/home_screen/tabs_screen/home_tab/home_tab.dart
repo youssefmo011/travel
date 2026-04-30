@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:untitled1/core/assets/app_assets.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/chat_screen/chat_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/profile_screen.dart';
 import 'widgets/featured_vibe_card.dart';
 import 'widgets/story_view_screen.dart';
 
@@ -32,7 +33,6 @@ class _HomeTabState extends State<HomeTab> {
   Future<void> _checkAndCleanupStory() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-
     try {
       final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
       if (doc.exists && doc.data() != null) {
@@ -41,8 +41,7 @@ class _HomeTabState extends State<HomeTab> {
           final Timestamp? timestamp = data['storyTimestamp'];
           if (timestamp != null) {
             final DateTime storyTime = timestamp.toDate();
-            final difference = DateTime.now().difference(storyTime).inHours;
-            if (difference >= 12) {
+            if (DateTime.now().difference(storyTime).inHours >= 12) {
               await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
                 'userStories': FieldValue.delete(),
                 'storyTimestamp': FieldValue.delete(),
@@ -60,29 +59,23 @@ class _HomeTabState extends State<HomeTab> {
   Future<void> _pickAndUploadStory() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
-
     final ImagePicker picker = ImagePicker();
     try {
       final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
       if (image == null) return;
-
       setState(() => _isUploadingStory = true);
-
       var request = http.MultipartRequest('POST', Uri.parse('https://api.cloudinary.com/v1_1/$_cloudName/image/upload'));
       request.fields['upload_preset'] = _uploadPreset;
       request.files.add(await http.MultipartFile.fromPath('file', image.path));
-
       var response = await request.send();
       if (response.statusCode == 200) {
         var responseData = await response.stream.bytesToString();
         String imageUrl = jsonDecode(responseData)['secure_url'];
-
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'userStories': FieldValue.arrayUnion([imageUrl]),
           'storyTimestamp': FieldValue.serverTimestamp(),
           'viewedBy': [],
         }, SetOptions(merge: true));
-
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Story updated!')));
       }
     } catch (e) {
@@ -95,14 +88,10 @@ class _HomeTabState extends State<HomeTab> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-
     return Scaffold(
       backgroundColor: const Color(0xFFFDFCF9),
       body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('users')
-            .doc(user?.uid)
-            .snapshots(),
+        stream: FirebaseFirestore.instance.collection('users').doc(user?.uid).snapshots(),
         builder: (context, snapshot) {
           String userName = "Traveler";
           String? profileImageUrl;
@@ -111,7 +100,6 @@ class _HomeTabState extends State<HomeTab> {
             userName = data['name'] ?? "Traveler";
             profileImageUrl = data['profileImage'];
           }
-
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Column(
@@ -131,152 +119,10 @@ class _HomeTabState extends State<HomeTab> {
   }
 }
 
-class _RecentStoriesSection extends StatelessWidget {
-  final VoidCallback onAddStory;
-  final bool isUploading;
-  const _RecentStoriesSection({required this.onAddStory, required this.isUploading});
-
-  @override
-  Widget build(BuildContext context) {
-    final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Text('RECENT STORIES', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1B2612))),
-        ),
-        SizedBox(
-          height: 110,
-          child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('users').snapshots(),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) return const Center(child: Text("Error"));
-              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-              
-              // الفلترة: نعرض الحالي دائماً + الباقي اللي عندهم ستوريز فقط
-              final usersDocs = snapshot.data!.docs.where((doc) {
-                final data = doc.data() as Map<String, dynamic>;
-                final hasStory = data.containsKey('userStories') && (data['userStories'] is List) && (data['userStories'] as List).isNotEmpty;
-                return doc.id == currentUserUid || hasStory;
-              }).toList();
-              
-              // الترتيب: أنت أولاً، ثم الباقي بالأحدث
-              usersDocs.sort((a, b) {
-                if (a.id == currentUserUid) return -1;
-                if (b.id == currentUserUid) return 1;
-                final aTime = (a.data() as Map<String, dynamic>)['storyTimestamp'] as Timestamp?;
-                final bTime = (b.data() as Map<String, dynamic>)['storyTimestamp'] as Timestamp?;
-                if (aTime != null && bTime != null) return bTime.compareTo(aTime);
-                return 0;
-              });
-
-              return ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                scrollDirection: Axis.horizontal,
-                itemCount: usersDocs.length,
-                separatorBuilder: (context, index) => const SizedBox(width: 15),
-                itemBuilder: (context, index) {
-                  final userData = usersDocs[index].data() as Map<String, dynamic>;
-                  final String userId = usersDocs[index].id;
-                  final String? profileImg = userData['profileImage'];
-                  final List<dynamic> stories = userData['userStories'] ?? [];
-                  final List<dynamic> viewedBy = userData['viewedBy'] ?? [];
-                  
-                  final bool isMe = userId == currentUserUid;
-                  final bool hasUnseenStory = stories.isNotEmpty && !viewedBy.contains(currentUserUid);
-
-                  return Column(children: [
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            if (stories.isNotEmpty) {
-                              if (!isMe && !viewedBy.contains(currentUserUid)) {
-                                FirebaseFirestore.instance.collection('users').doc(userId).set({
-                                  'viewedBy': FieldValue.arrayUnion([currentUserUid])
-                                }, SetOptions(merge: true));
-                              }
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => StoryViewScreen(
-                                imageUrls: stories, 
-                                userName: userData['name'] ?? "User", 
-                                userId: userId,
-                                userProfileImage: profileImg,
-                              )));
-                            } else if (isMe) {
-                              onAddStory();
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(3),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: hasUnseenStory 
-                                  ? [const Color(0xFFC4D4A4), const Color(0xFF6D8B6D)] 
-                                  : [Colors.grey.shade300, Colors.grey.shade300],
-                              ),
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                              child: CircleAvatar(
-                                radius: 30,
-                                backgroundColor: const Color(0xFFE8F0E8),
-                                backgroundImage: (profileImg != null && profileImg.startsWith('http')) 
-                                    ? NetworkImage(profileImg) 
-                                    : const AssetImage(AppAssets.profilePhoto) as ImageProvider,
-                              ),
-                            ),
-                          ),
-                        ),
-                        if (isMe)
-                          Positioned(
-                            bottom: -2,
-                            right: -2,
-                            child: GestureDetector(
-                              onTap: onAddStory,
-                              child: Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                                child: const CircleAvatar(
-                                  radius: 10,
-                                  backgroundColor: Color(0xFF6D8B6D),
-                                  child: Icon(Icons.add, size: 14, color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (isMe && isUploading)
-                          const Positioned.fill(child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(isMe ? "Your Story" : (userData['name']?.split(' ')[0] ?? "User"), 
-                      style: TextStyle(
-                        fontSize: 11, 
-                        fontWeight: hasUnseenStory ? FontWeight.bold : FontWeight.normal,
-                        color: hasUnseenStory ? const Color(0xFF1B2612) : Colors.grey,
-                      )
-                    ),
-                  ]);
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _CustomAppBar extends StatelessWidget {
   final Function(int)? onTabChanged;
   final String? profileImageUrl;
   const _CustomAppBar({this.onTabChanged, this.profileImageUrl});
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -289,14 +135,13 @@ class _CustomAppBar extends StatelessWidget {
             children: [
               _buildIconBtn(Icons.chat_bubble_outline, onTap: () => Navigator.pushNamed(context, ChatScreen.routeName)),
               const SizedBox(width: 10),
-              _buildIconBtn(Icons.settings_outlined),
+              _buildIconBtn(Icons.settings_outlined, onTap: () => Navigator.pushNamed(context, ProfileScreen.routeName)),
             ],
           ),
         ],
       ),
     );
   }
-
   Widget _buildIconBtn(IconData icon, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
@@ -313,7 +158,6 @@ class _UserInfoHeader extends StatelessWidget {
   final String userName;
   final String? imageUrl;
   const _UserInfoHeader({required this.userName, this.imageUrl});
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -343,20 +187,145 @@ class _UserInfoHeader extends StatelessWidget {
   }
 }
 
+class _RecentStoriesSection extends StatelessWidget {
+  final VoidCallback onAddStory;
+  final bool isUploading;
+  const _RecentStoriesSection({required this.onAddStory, required this.isUploading});
+  @override
+  Widget build(BuildContext context) {
+    final currentUserUid = FirebaseAuth.instance.currentUser?.uid;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Text('RECENT STORIES', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1B2612))),
+        ),
+        SizedBox(
+          height: 110,
+          child: StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('users').snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+              final usersDocs = snapshot.data!.docs.where((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final hasStory = data.containsKey('userStories') && (data['userStories'] is List) && (data['userStories'] as List).isNotEmpty;
+                return doc.id == currentUserUid || hasStory;
+              }).toList();
+              usersDocs.sort((a, b) {
+                if (a.id == currentUserUid) return -1;
+                if (b.id == currentUserUid) return 1;
+                final aData = a.data() as Map<String, dynamic>;
+                final bData = b.data() as Map<String, dynamic>;
+                final aTime = aData['storyTimestamp'] as Timestamp?;
+                final bTime = bData['storyTimestamp'] as Timestamp?;
+                if (aTime != null && bTime != null) return bTime.compareTo(aTime);
+                return 0;
+              });
+              return ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                scrollDirection: Axis.horizontal,
+                itemCount: usersDocs.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 15),
+                itemBuilder: (context, index) {
+                  final userData = usersDocs[index].data() as Map<String, dynamic>;
+                  final String userId = usersDocs[index].id;
+                  final String? profileImg = userData['profileImage'];
+                  final List<dynamic> stories = userData['userStories'] ?? [];
+                  final List<dynamic> viewedBy = userData['viewedBy'] ?? [];
+                  final bool isMe = userId == currentUserUid;
+                  final bool hasUnseenStory = stories.isNotEmpty && !viewedBy.contains(currentUserUid);
+                  return Column(children: [
+                    Stack(clipBehavior: Clip.none, children: [
+                      GestureDetector(
+                        onTap: () async {
+                          if (stories.isNotEmpty) {
+                            if (!isMe && !viewedBy.contains(currentUserUid)) {
+                              FirebaseFirestore.instance.collection('users').doc(userId).set({'viewedBy': FieldValue.arrayUnion([currentUserUid])}, SetOptions(merge: true));
+                            }
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => StoryViewScreen(imageUrls: stories, userName: userData['name'] ?? "User", userId: userId, userProfileImage: profileImg)));
+                          } else if (isMe) onAddStory();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(shape: BoxShape.circle, gradient: LinearGradient(colors: hasUnseenStory ? [const Color(0xFFC4D4A4), const Color(0xFF6D8B6D)] : [Colors.grey.shade300, Colors.grey.shade300])),
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                            child: CircleAvatar(radius: 30, backgroundColor: const Color(0xFFE8F0E8), backgroundImage: (profileImg != null && profileImg.startsWith('http')) ? NetworkImage(profileImg) : const AssetImage(AppAssets.profilePhoto) as ImageProvider),
+                          ),
+                        ),
+                      ),
+                      if (isMe) Positioned(bottom: -2, right: -2, child: GestureDetector(onTap: onAddStory, child: Container(padding: const EdgeInsets.all(2), decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle), child: const CircleAvatar(radius: 10, backgroundColor: Color(0xFF6D8B6D), child: Icon(Icons.add, size: 14, color: Colors.white))))),
+                      if (isMe && isUploading) const Positioned.fill(child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))),
+                    ]),
+                    const SizedBox(height: 6),
+                    Text(isMe ? "Your Story" : (userData['name']?.split(' ')[0] ?? "User"), style: TextStyle(fontSize: 11, fontWeight: hasUnseenStory ? FontWeight.bold : FontWeight.normal, color: hasUnseenStory ? const Color(0xFF1B2612) : Colors.grey)),
+                  ]);
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _FeaturedVibeSection extends StatelessWidget {
   const _FeaturedVibeSection();
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20.0),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 20.0), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          const Text('Featured Vibe', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1B2612))),
-          Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: const Color(0xFFFFF8E1), borderRadius: BorderRadius.circular(20)), child: const Text('Trending Today', style: TextStyle(fontSize: 12, color: Colors.orange, fontWeight: FontWeight.bold))),
-        ])),
+    final user = FirebaseAuth.instance.currentUser;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Featured Vibe', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1B2612))),
+              Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: const Color(0xFFFFF8E1), borderRadius: BorderRadius.circular(20)), child: const Text('Trending Today', style: TextStyle(fontSize: 12, color: Colors.orange, fontWeight: FontWeight.bold))),
+            ],
+          ),
+        ),
         const SizedBox(height: 20),
-        SizedBox(height: 400, child: ListView.separated(padding: const EdgeInsets.symmetric(horizontal: 20), scrollDirection: Axis.horizontal, itemCount: 3, separatorBuilder: (context, index) => const SizedBox(width: 20), itemBuilder: (context, index) => const FeaturedVibeCard(title: 'The Urban Explorer', location: 'Tokyo, Japan', imagePath: AppAssets.photoTravel))),
-      ]),
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('posts').orderBy('timestamp', descending: true).snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
+            final posts = snapshot.data?.docs ?? [];
+            if (posts.isEmpty) {
+              return const Padding(padding: EdgeInsets.all(40.0), child: Center(child: Text("No experiences shared yet. Be the first!")));
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: posts.length,
+              itemBuilder: (context, index) {
+                final postData = posts[index].data() as Map<String, dynamic>;
+                final postId = posts[index].id;
+                final List<dynamic> likes = postData['likes'] is List ? postData['likes'] : [];
+                final bool isLiked = user != null && likes.contains(user.uid);
+                return FeaturedVibeCard(
+                  title: postData['title'] ?? "Untitle Experience",
+                  location: postData['location'] ?? "Global",
+                  imagePath: postData['imageUrl'],
+                  userName: postData['userName'],
+                  profileImage: postData['userImage'],
+                  likes: likes.length.toString(),
+                  isNetworkImage: true,
+                  postId: postId,
+                  postData: postData,
+                  isLiked: isLiked,
+                );
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 }

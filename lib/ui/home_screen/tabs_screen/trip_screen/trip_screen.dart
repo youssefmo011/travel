@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
 import 'treasure_walk_screen.dart';
-import '../explore_screen/explore_screen.dart'; // تأكد من أن مسار ملف الـ Explore صحيح لديك
+
+// تعريف الموديل هنا لضمان عمل الصفحة بعد تحديث الـ Explore
+class TripVibe {
+  final String title;
+  final String location;
+  final String imageUrl;
+  final String description;
+
+  TripVibe({
+    required this.title,
+    required this.location,
+    required this.imageUrl,
+    required this.description,
+  });
+}
 
 class TripScreen extends StatelessWidget {
   static const String routeName = '/trip';
@@ -8,14 +22,12 @@ class TripScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // بيانات تجريبية لرحلة نشطة لربط الصفحات ببعضها
-    final VibeLocation activeTrip = VibeLocation(
+    // بيانات تجريبية للرحلة النشطة
+    final TripVibe activeTrip = TripVibe(
       title: "Alpine Escape",
       location: "ZERMATT, SWITZERLAND",
       imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000",
       description: "Your scheduled retreat to the Swiss Alps.",
-      distance: "15km away",
-      rating: 5.0,
     );
 
     return Scaffold(
@@ -26,7 +38,6 @@ class TripScreen extends StatelessWidget {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // إضافة أيقونة بسيطة في الـ AppBar لتعطي شكلاً احترافياً
         actions: [
           IconButton(
             icon: const Icon(Icons.history, color: Color(0xFF6B8E6B)),
@@ -39,22 +50,16 @@ class TripScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // قسم الرحلة النشطة
             const Text("ACTIVE EXPEDITION",
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
             const SizedBox(height: 15),
             _buildActiveTripCard(context, activeTrip),
-
             const SizedBox(height: 35),
-
-            // قسم الرحلات القادمة
             const Text("UPCOMING VIBES",
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1.2)),
             const SizedBox(height: 15),
-
-            // تم تصحيح الأيقونة هنا لتصبح self_improvement
             _buildUpcomingItem("Tokyo Street Hunt", "24 May 2026", Icons.map_outlined),
-            _buildUpcomingItem("Kyoto Zen Walk", "12 June 2026", Icons.self_improvement),
+            _buildUpcomingItem("Kyoto Zen Walk", "12 June 2026", Icons.spa_outlined),
             _buildUpcomingItem("Desert Safari", "05 July 2026", Icons.wb_sunny_outlined),
           ],
         ),
@@ -62,7 +67,7 @@ class TripScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActiveTripCard(BuildContext context, VibeLocation vibe) {
+  Widget _buildActiveTripCard(BuildContext context, TripVibe vibe) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -70,7 +75,7 @@ class TripScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           )
@@ -116,10 +121,8 @@ class TripScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => TreasureWalkScreen(vibe: vibe)),
-                    );
+                    // فتح صفحة الكنز
+                    Navigator.pushNamed(context, 'treasure_walk');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6B8E6B),
@@ -151,7 +154,7 @@ class TripScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
       ),
       child: Row(
         children: [
