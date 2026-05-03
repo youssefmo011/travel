@@ -1,11 +1,15 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+
+// Imports الشاشات
 import 'package:untitled1/ui/home_screen/home_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/chat_screen/chat_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/chat_screen/chat_details_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/explore_screen/explore_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/explore_screen/place_details_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/explore_screen/map_plan_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/explore_screen/shuffle_result_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/profile_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/personal_info_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/notifications_screen.dart';
@@ -13,7 +17,7 @@ import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/travel_histo
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/favorites_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/help_support_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/gamified_profile_screen.dart';
-import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/whats_new_screen.dart'; // إضافة الشاشة الجديدة
+import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/whats_new_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_question_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_analysis_screen.dart';
@@ -26,7 +30,6 @@ import 'package:untitled1/ui/login_screen/login_screen.dart';
 import 'package:untitled1/ui/onboarding/onboarding_screen.dart';
 import 'package:untitled1/ui/register_screen/register_screen.dart';
 import 'package:untitled1/ui/splash_screen/splash_screen.dart';
-
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -34,10 +37,10 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   await Hive.initFlutter();
   await Hive.openBox('explore_cache');
-  
+
   runApp(const MyApp());
 }
 
@@ -63,6 +66,10 @@ class MyApp extends StatelessWidget {
         ChatScreen.routeName: (context) => const ChatScreen(),
         ChatDetailsScreen.routeName: (context) => const ChatDetailsScreen(),
         ExploreScreen.routeName: (context) => const ExploreScreen(),
+        PlaceDetailsScreen.routeName: (context) => const PlaceDetailsScreen(),
+        MapPlanScreen.routeName: (context) => const MapPlanScreen(),
+        // تأكد أن هذا الكلاس موجود في الملف المخصص له
+        ShuffleResultScreen.routeName: (context) => const ShuffleResultScreen(),
         ProfileScreen.routeName: (context) => const ProfileScreen(),
         PersonalInfoScreen.routeName: (context) => const PersonalInfoScreen(),
         NotificationsScreen.routeName: (context) => const NotificationsScreen(),
@@ -70,12 +77,12 @@ class MyApp extends StatelessWidget {
         FavoritesScreen.routeName: (context) => const FavoritesScreen(),
         HelpSupportScreen.routeName: (context) => const HelpSupportScreen(),
         GamifiedProfileScreen.routeName: (context) => const GamifiedProfileScreen(),
-        WhatsNewScreen.routeName: (context) => const WhatsNewScreen(), // تسجيل المسار
+        WhatsNewScreen.routeName: (context) => const WhatsNewScreen(),
         QuizScreen.routeName: (context) => const QuizScreen(),
         QuizQuestionScreen.routeName: (context) => const QuizQuestionScreen(),
         QuizAnalysisScreen.routeName: (context) => const QuizAnalysisScreen(),
         QuizResultsScreen.routeName: (context) => const QuizResultsScreen(),
-        TripScreen.routeName: (context) => const TripScreen(),
+        TripScreen.routeName: (context) => const TripScreen(), // تم التأكد من صحة الإرجاع هنا
         TreasureWalkScreen.routeName: (context) => const TreasureWalkScreen(),
         AddPostScreen.routeName: (context) => const AddPostScreen(),
       },
