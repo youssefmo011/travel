@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
-import 'quiz_question_screen.dart';
+import 'personality_quiz_screen.dart';
 import 'widgets/feature_item.dart';
 
 class QuizScreen extends StatelessWidget {
@@ -89,7 +89,7 @@ class QuizScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, QuizQuestionScreen.routeName);
+                      Navigator.pushNamed(context, PersonalityQuizScreen.routeName);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
@@ -108,7 +108,6 @@ class QuizScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                // تم زيادة المسافة هنا لضمان ظهور الزرار فوق الـ Bottom Nav Bar
                 const SizedBox(height: 100),
               ],
             ),

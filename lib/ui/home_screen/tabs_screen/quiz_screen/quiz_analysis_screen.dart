@@ -13,6 +13,7 @@ class QuizAnalysisScreen extends StatefulWidget {
 
 class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  String? personalityResult;
 
   @override
   void initState() {
@@ -22,12 +23,22 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTick
       duration: const Duration(seconds: 2),
     )..repeat();
 
-    // Navigate to results after 4 seconds to give more time for the animation
+    // Navigate to results after 4 seconds
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, QuizResultsScreen.routeName);
+        Navigator.pushReplacementNamed(
+          context, 
+          QuizResultsScreen.routeName,
+          arguments: personalityResult,
+        );
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    personalityResult = ModalRoute.of(context)?.settings.arguments as String?;
   }
 
   @override
@@ -46,8 +57,8 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTick
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFFE2E5D1), // Light greenish-beige
-              Color(0xFFB4BC96), // Darker greenish-beige
+              Color(0xFFE2E5D1),
+              Color(0xFFB4BC96),
             ],
           ),
         ),
@@ -65,7 +76,6 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTick
                 ),
               ),
               const Spacer(),
-              // Globe and animated circles
               Stack(
                 alignment: Alignment.center,
                 children: [
@@ -106,7 +116,6 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTick
                 ),
               ),
               const SizedBox(height: 24),
-              // علامة التحميل (Loading Indicator)
               const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.secondary),
                 strokeWidth: 3,
@@ -125,7 +134,6 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTick
                 ),
               ),
               const Spacer(),
-              // Insight Card
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 padding: const EdgeInsets.all(20),
@@ -160,7 +168,7 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTick
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Preferences suggest a love for quiet mornings and artisan coffee...',
+                            'Preferences suggest a unique travel soul waiting to be revealed...',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppColors.secondary,
