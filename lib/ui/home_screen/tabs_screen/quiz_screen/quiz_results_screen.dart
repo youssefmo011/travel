@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../../../../core/theme/app_colors.dart';
+import 'quiz_shuffle_screen.dart';
 
 class QuizResultsScreen extends StatelessWidget {
   static const String routeName = 'quiz-results';
@@ -11,8 +12,17 @@ class QuizResultsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // استلام الشخصية من الشاشة السابقة
-    final String personality = ModalRoute.of(context)?.settings.arguments as String? ?? "Dreamer";
+    // استلام البيانات الديناميكية من الكويز (النسب الحقيقية)
+    final Map<String, dynamic> quizData = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {
+      "personality": "Social Butterfly",
+      "confidence": 0,
+      "nature": 0,
+    };
+
+    final String personality = quizData['personality'];
+    final int confidence = quizData['confidence'];
+    final int nature = quizData['nature'];
+
     final data = _getPersonalityData(personality);
     final user = FirebaseAuth.instance.currentUser;
 
@@ -34,12 +44,6 @@ class QuizResultsScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert, color: Color(0xFF2D3E2D)),
-          ),
-        ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
@@ -48,20 +52,16 @@ class QuizResultsScreen extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           String? profileImageUrl;
-          
           if (snapshot.hasData && snapshot.data!.exists) {
             final userData = snapshot.data!.data() as Map<String, dynamic>;
             profileImageUrl = userData['profileImage'];
           }
-          
-          // إذا لم توجد صورة في Firestore نستخدم صورة الحساب
           profileImageUrl ??= user?.photoURL;
 
           return SingleChildScrollView(
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                // صورة اليوزر الحقيقية
                 Center(
                   child: Container(
                     padding: const EdgeInsets.all(4),
@@ -80,7 +80,7 @@ class QuizResultsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'You are a ${data['title']}!',
+                  'You are a $personality!',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -88,7 +88,6 @@ class QuizResultsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                // الشعار المطلوب
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40.0),
                   child: Text(
@@ -107,9 +106,11 @@ class QuizResultsScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Row(
                     children: [
-                      _buildStatItem('NATURE AFFINITY', data['affinity'] ?? 'Very High'),
+                      // Nature Affinity ديناميكي (يعتمد على إجاباتك)
+                      _buildStatItem('NATURE AFFINITY', _getNatureLabel(nature)),
                       const SizedBox(width: 12),
-                      _buildStatItem('MATCH CONFIDENCE', '${data['confidence'] ?? 88}%'),
+                      // Match Confidence ديناميكي (ممكن يوصل لـ 0% لو الإجابات سلبية)
+                      _buildStatItem('MATCH CONFIDENCE', '$confidence%'),
                     ],
                   ),
                 ),
@@ -146,14 +147,22 @@ class QuizResultsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                ... (data['recommendations'] as List).map((rec) => _buildResultCard(
-                  rec['name'],
-                  rec['desc'],
-                  rec['match'],
-                  rec['image'],
-                )),
+                
+                // الأماكن المطلوبة مع صورها المحدثة
+                _buildResultCard(
+                  'El Gouna Marina',
+                  'Vibrant nights and events by the sea.',
+                  '$confidence% Match',
+                  AppAssets.photoTravel,
+                ),
+                _buildResultCard(
+                  'Dahab Blue Hole',
+                  'A paradise for divers and mountain lovers.',
+                  '${confidence > 10 ? confidence - 4 : confidence}% Match',
+                  AppAssets.dahabBlueHole,
+                ),
+                
                 const SizedBox(height: 20),
-                // زر SHUFFLE الملون
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
                   child: Container(
@@ -165,7 +174,13 @@ class QuizResultsScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: ElevatedButton(
-                      onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context, 
+                          QuizShuffleScreen.routeName,
+                          arguments: personality,
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         shadowColor: Colors.transparent,
@@ -210,64 +225,26 @@ class QuizResultsScreen extends StatelessWidget {
     );
   }
 
+  String _getNatureLabel(int percent) {
+    if (percent <= 20) return "Very Low";
+    if (percent <= 45) return "Low";
+    if (percent <= 70) return "Medium";
+    if (percent <= 90) return "High";
+    return "Very High";
+  }
+
   Map<String, dynamic> _getPersonalityData(String type) {
     switch (type) {
       case "Explorer":
-        return {
-          "title": "Explorer",
-          "quote": "the world is too big to stay the same",
-          "affinity": "Extreme",
-          "confidence": 96,
-          "recommendations": [
-            {"name": "Dahab Blue Hole", "desc": "Wild coast and deep dives.", "match": "98%", "image": AppAssets.photoTravel},
-            {"name": "Siwa Oasis", "desc": "Ancient hidden desert gems.", "match": "94%", "image": AppAssets.storyPhoto},
-          ]
-        };
+        return {"title": "Explorer", "quote": "the world is too big to stay the same"};
       case "Social Butterfly":
-        return {
-          "title": "Social Butterfly",
-          "quote": "every place feels better when it’s shared",
-          "affinity": "Medium",
-          "confidence": 95,
-          "recommendations": [
-            {"name": "El Gouna Marina", "desc": "Vibrant nights and events.", "match": "95%", "image": AppAssets.onboarding},
-            {"name": "Zamalek Rooftops", "desc": "Meet urban travelers.", "match": "91%", "image": AppAssets.profilePhoto},
-          ]
-        };
+        return {"title": "Social Butterfly", "quote": "every place feels better when it’s shared"};
       case "Cultural Seeker":
-        return {
-          "title": "Cultural Seeker",
-          "quote": "i want to feel the soul of a place",
-          "affinity": "High",
-          "confidence": 94,
-          "recommendations": [
-            {"name": "Luxor Temple", "desc": "A journey through ancient time.", "match": "97%", "image": AppAssets.photoTravel},
-            {"name": "Old Cairo", "desc": "Heart of hidden traditions.", "match": "94%", "image": AppAssets.storyPhoto},
-          ]
-        };
+        return {"title": "Cultural Seeker", "quote": "i want to feel the soul of a place"};
       case "Thrill Chaser":
-        return {
-          "title": "Thrill Chaser",
-          "quote": "if it doesn't scare me a little , i want it more",
-          "affinity": "Ultra",
-          "confidence": 99,
-          "recommendations": [
-            {"name": "Marsa Alam Diving", "desc": "Underwater adrenaline rush.", "match": "99%", "image": AppAssets.onboarding},
-            {"name": "Safari Quad Biking", "desc": "Speed through wild dunes.", "match": "96%", "image": AppAssets.photoTravel},
-          ]
-        };
-      default: // Dreamer / The dreamer
-        return {
-          "title": "The dreamer",
-          "quote": "i travel for the moments that feel like a movie",
-          "affinity": "Very High",
-          "confidence": 88,
-          "recommendations": [
-            {"name": "The Hidden Glade", "desc": "Peace in the ancient forest.", "match": "95%", "image": AppAssets.photoTravel},
-            {"name": "Botanical Tea House", "desc": "Infusions in a glass garden.", "match": "91%", "image": AppAssets.storyPhoto},
-            {"name": "Zen Rock Sanctuary", "desc": "Tranquility by flowing water.", "match": "85%", "image": AppAssets.onboarding},
-          ]
-        };
+        return {"title": "Thrill Chaser", "quote": "if it doesn't scare me a little , i want it more"};
+      default:
+        return {"title": "The dreamer", "quote": "i travel for the moments that feel like a movie"};
     }
   }
 

@@ -23,6 +23,7 @@ import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_question_s
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_analysis_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_results_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/personality_quiz_screen.dart';
+import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_shuffle_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/trip_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/treasure_walk_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/home_tab/widgets/add_post_screen.dart';
@@ -83,6 +84,7 @@ class MyApp extends StatelessWidget {
         PersonalityQuizScreen.routeName: (context) => const PersonalityQuizScreen(),
         QuizAnalysisScreen.routeName: (context) => const QuizAnalysisScreen(),
         QuizResultsScreen.routeName: (context) => const QuizResultsScreen(),
+        QuizShuffleScreen.routeName: (context) => const QuizShuffleScreen(),
         TripScreen.routeName: (context) => const TripScreen(),
         TreasureWalkScreen.routeName: (context) => const TreasureWalkScreen(),
         AddPostScreen.routeName: (context) => const AddPostScreen(),

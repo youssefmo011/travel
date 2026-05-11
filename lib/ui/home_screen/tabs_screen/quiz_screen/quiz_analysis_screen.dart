@@ -13,7 +13,7 @@ class QuizAnalysisScreen extends StatefulWidget {
 
 class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  String? personalityResult;
+  Map<String, dynamic>? quizData;
 
   @override
   void initState() {
@@ -29,7 +29,7 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTick
         Navigator.pushReplacementNamed(
           context, 
           QuizResultsScreen.routeName,
-          arguments: personalityResult,
+          arguments: quizData, // Pass the whole map
         );
       }
     });
@@ -38,7 +38,11 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen> with SingleTick
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    personalityResult = ModalRoute.of(context)?.settings.arguments as String?;
+    // Accept map instead of string
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map<String, dynamic>) {
+      quizData = args;
+    }
   }
 
   @override

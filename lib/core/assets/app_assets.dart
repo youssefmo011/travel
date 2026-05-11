@@ -27,4 +27,6 @@ class AppAssets {
   static const String storyPhoto = "${_basePath}story_photo.jpg";
   static const String onboarding = "${_basePath}onboarding.png";
   static const String fastActive = "${_basePath}Fast.jpg";
+  static const String dahabBlueHole = "${_basePath}Dahab blue hole.jpg";
+  static const String tokyo = "${_basePath}Tokyo.jpg";
 }
