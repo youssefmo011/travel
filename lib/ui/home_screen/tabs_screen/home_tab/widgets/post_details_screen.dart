@@ -59,7 +59,6 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
       
       if (user!.uid != widget.postData['userId']) {
         _sendNotification(
-          title: currentUserName ?? "Someone", 
           body: "liked your experience.", 
           type: "like"
         );
@@ -71,19 +70,26 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     if (_commentController.text.trim().isEmpty || user == null) return;
     final String commentText = _commentController.text.trim();
     
+    // جلب بيانات المستخدم الحالية لضمان جودة الكومنت
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
+    final userData = userDoc.data();
+    final String uName = userData?['name'] ?? currentUserName ?? "Explorer";
+    final String? uImage = userData?['profileImage'] ?? currentUserProfileImg;
+
     await FirebaseFirestore.instance.collection('posts').doc(widget.postId).collection('comments').add({
       'userId': user!.uid,
-      'userName': currentUserName ?? "Explorer",
-      'userImage': currentUserProfileImg,
+      'userName': uName,
+      'userImage': uImage,
       'text': commentText,
       'timestamp': FieldValue.serverTimestamp(),
     });
 
     if (user!.uid != widget.postData['userId']) {
       _sendNotification(
-        title: currentUserName ?? "Someone", 
         body: "commented: $commentText", 
-        type: "comment"
+        type: "comment",
+        sName: uName,
+        sImage: uImage
       );
     }
     
@@ -91,20 +97,20 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     FocusScope.of(context).unfocus();
   }
 
-  void _sendNotification({required String title, required String body, required String type}) async {
+  void _sendNotification({required String body, required String type, String? sName, String? sImage}) async {
     final String? receiverId = widget.postData['userId'];
     if (receiverId == null || user == null) return;
 
-    // جلب أحدث بياناتك لإرسالها في الإشعار
-    final senderDoc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
-    final senderData = senderDoc.data();
+    // التأكد من جلب بياناتك الحقيقية
+    final String finalName = sName ?? currentUserName ?? user!.displayName ?? "Explorer";
+    final String? finalImage = sImage ?? currentUserProfileImg ?? user!.photoURL;
 
     await FirebaseFirestore.instance.collection('notifications').add({
       'receiverId': receiverId,
       'senderId': user!.uid,
-      'senderName': senderData?['name'] ?? currentUserName ?? "Explorer",
-      'senderImage': senderData?['profileImage'] ?? currentUserProfileImg,
-      'title': senderData?['name'] ?? currentUserName ?? "New Interaction",
+      'senderName': finalName,
+      'senderImage': finalImage,
+      'title': finalName, 
       'body': body,
       'type': type,
       'postId': widget.postId,
@@ -125,14 +131,33 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(bottom: Radius.circular(40)),
-                  child: Image.network(widget.postData['imageUrl'] ?? '', height: 450, width: double.infinity, fit: BoxFit.cover, errorBuilder: (c, e, s) => Container(height: 450, color: Colors.grey.shade200)),
+                  child: Image.network(
+                    widget.postData['imageUrl'] ?? '',
+                    height: 450, width: double.infinity, fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(height: 450, color: Colors.grey.shade200),
+                  ),
                 ),
-                Positioned(top: 50, left: 20, child: IconButton(icon: CircleAvatar(backgroundColor: Colors.black.withValues(alpha: 0.3), child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20)), onPressed: () => Navigator.pop(context))),
-                Positioned(top: 50, right: 20, child: IconButton(icon: CircleAvatar(backgroundColor: Colors.black.withValues(alpha: 0.3), child: Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.red : Colors.white, size: 22)), onPressed: _toggleLike)),
+                Positioned(
+                  top: 50, left: 20,
+                  child: IconButton(
+                    icon: CircleAvatar(backgroundColor: Colors.black.withValues(alpha: 0.3), child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20)),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ),
+                Positioned(
+                  top: 50, right: 20,
+                  child: IconButton(
+                    icon: CircleAvatar(
+                      backgroundColor: Colors.black.withValues(alpha: 0.3),
+                      child: Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.red : Colors.white, size: 22),
+                    ),
+                    onPressed: _toggleLike,
+                  ),
+                ),
               ],
             ),
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -160,6 +185,7 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
         final comments = snapshot.data!.docs;
+        if (comments.isEmpty) return const Center(child: Text("No comments yet.", style: TextStyle(color: Colors.grey, fontSize: 12)));
         return ListView.builder(
           shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
           itemCount: comments.length > 5 ? 5 : comments.length,
@@ -188,8 +214,9 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     return Row(children: [
       CircleAvatar(radius: 18, backgroundColor: const Color(0xFFE8F0E8), backgroundImage: (currentUserProfileImg != null && currentUserProfileImg!.startsWith('http')) ? NetworkImage(currentUserProfileImg!) : const AssetImage(AppAssets.profilePhoto) as ImageProvider),
       const SizedBox(width: 12),
-      Expanded(child: TextField(controller: _commentController, decoration: const InputDecoration(hintText: "Add a comment...", border: InputBorder.none))),
-      IconButton(icon: const Icon(Icons.send, color: Color(0xFF6D8B6D)), onPressed: _addComment),
+      Expanded(child: Container(padding: const EdgeInsets.symmetric(horizontal: 16), decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(30)), child: TextField(controller: _commentController, decoration: const InputDecoration(hintText: "Add a comment...", border: InputBorder.none)))),
+      const SizedBox(width: 8),
+      IconButton(icon: const Icon(Icons.send_rounded, color: Color(0xFF6D8B6D)), onPressed: _addComment),
     ]);
   }
 }

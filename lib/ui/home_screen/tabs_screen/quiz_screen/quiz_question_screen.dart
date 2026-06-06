@@ -38,6 +38,7 @@ class QuizQuestionScreen extends StatefulWidget {
 class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
   int _currentStep = 0;
   int? _selectedOptionIndex;
+  final List<String> _selectedVibes = [];
 
   final List<QuizQuestion> _questions = [
     QuizQuestion(
@@ -105,15 +106,50 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       return;
     }
 
+    _selectedVibes.add(_questions[_currentStep].options[_selectedOptionIndex!].vibe);
+
     if (_currentStep < _questions.length - 1) {
       setState(() {
         _currentStep++;
         _selectedOptionIndex = null;
       });
     } else {
-      Navigator.pushNamed(context, QuizAnalysisScreen.routeName);
+      // حساب الشخصية الأكثر تكراراً
+      String personality = _calculatePersonality();
+      
+      Navigator.pushNamed(
+        context, 
+        QuizAnalysisScreen.routeName,
+        arguments: {
+          "personality": personality,
+          "vibes": _selectedVibes,
+          "confidence": 85 + (placesCount % 10), // رقم افتراضي للثقة
+          "nature": _selectedVibes.where((v) => v == 'Nature').length * 20,
+        },
+      );
     }
   }
+
+  String _calculatePersonality() {
+    Map<String, int> counts = {};
+    for (var v in _selectedVibes) {
+      counts[v] = (counts[v] ?? 0) + 1;
+    }
+    
+    var sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    String topVibe = sorted.first.key;
+
+    switch (topVibe) {
+      case 'Adventure': return 'Thrill Chaser';
+      case 'Nature': return 'Explorer';
+      case 'City': return 'Social Butterfly';
+      case 'Luxury': return 'Luxury Seeker';
+      default: return 'Explorer';
+    }
+  }
+
+  // نحتاج لمتغير placesCount لحساب الثقة، سأستخدم طول قائمة vibes كبديل بسيط
+  int get placesCount => _selectedVibes.length;
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +171,11 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                     IconButton(
                       onPressed: () {
                         if (_currentStep > 0) {
-                          setState(() => _currentStep--);
+                          _selectedVibes.removeLast();
+                          setState(() {
+                            _currentStep--;
+                            _selectedOptionIndex = null;
+                          });
                         } else {
                           Navigator.pop(context);
                         }

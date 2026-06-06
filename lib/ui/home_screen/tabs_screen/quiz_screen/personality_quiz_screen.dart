@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'quiz_analysis_screen.dart';
 
@@ -14,6 +17,7 @@ class PersonalityQuizScreen extends StatefulWidget {
 class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
   final PageController _pageController = PageController();
   int _currentQuestionIndex = 0;
+  int? _selectedOptionIndex;
 
   int explorerScore = 0;
   int dreamerScore = 0;
@@ -58,8 +62,14 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
     "Totally disagree"
   ];
 
-  void _handleAnswer(String option) {
-    int value = 5 - _options.indexOf(option); 
+  void _handleAnswer(int index) async {
+    setState(() {
+      _selectedOptionIndex = index;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 450));
+
+    int value = 5 - index; 
     int qIndex = _currentQuestionIndex + 1;
 
     if ([1, 5, 9, 22, 25].contains(qIndex)) explorerScore += value;
@@ -70,50 +80,85 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
     if ([6, 14, 16].contains(qIndex)) natureScore += value;
 
     if (_currentQuestionIndex < _questions.length - 1) {
+      setState(() {
+        _selectedOptionIndex = null;
+      });
       _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     } else {
       _finishQuiz();
     }
   }
 
-  void _finishQuiz() {
+  void _finishQuiz() async {
+    // Standardizing names for UI consistency (Serene Seeker, Bold Explorer, etc.)
     Map<String, int> scores = {
-      "Explorer": explorerScore,
-      "The dreamer": dreamerScore,
+      "Bold Explorer": explorerScore,
+      "Serene Seeker": dreamerScore,
       "Social Butterfly": socialScore,
-      "Cultural Seeker": culturalScore,
+      "Culture Seeker": culturalScore,
       "Thrill Chaser": thrillScore,
     };
 
     String finalPersonality = scores.entries.reduce((a, b) => a.value > b.value ? a : b).key;
-    int topScore = scores[finalPersonality]!;
     
-    int qCount = (finalPersonality == "Explorer" || finalPersonality == "Social Butterfly") ? 5 : 4;
-    int minScore = qCount; 
-    int maxScore = qCount * 5; 
-    int confidencePercent = (((topScore - minScore) / (maxScore - minScore)) * 100).toInt();
-    
-    int naturePercent = (((natureScore - 3) / 12) * 100).toInt();
+    // Calculate percentages for each trait
+    double natureP = (natureScore / 15) * 100;
+    double thrillP = (thrillScore / 20) * 100;
+    double culturalP = (culturalScore / 20) * 100;
+    double socialP = (socialScore / 25) * 100;
 
+    // Save to Hive for local session
+    var box = await Hive.openBox('user_prefs');
+    await box.put('personality', finalPersonality);
+
+    // CRITICAL: Save to Firestore to unlock the Badge & XP
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'personality': finalPersonality,
+          'badges': FieldValue.arrayUnion(['DNA Discovered']),
+          'quizXp': FieldValue.increment(1000),
+        }, SetOptions(merge: true));
+        debugPrint("Quiz results saved to Firestore successfully.");
+      } catch (e) {
+        debugPrint("Error saving quiz results: $e");
+      }
+    }
+
+    if (!mounted) return;
     Navigator.pushReplacementNamed(
       context, 
       QuizAnalysisScreen.routeName, 
       arguments: {
         "personality": finalPersonality,
-        "confidence": confidencePercent,
-        "nature": naturePercent,
+        "traits": {
+          "Nature": natureP.toInt(),
+          "Adventure": thrillP.toInt(),
+          "Culture": culturalP.toInt(),
+          "Social": socialP.toInt(),
+          "Relaxation": (dreamerScore * 5).toInt(), 
+        },
+        "raw_scores": scores,
       }
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    double progress = (_currentQuestionIndex + 1) / _questions.length;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFDFCF9),
       body: SafeArea(
         child: Column(
           children: [
-            // Top Bar
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey.withOpacity(0.1),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF769676)),
+              minHeight: 6,
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8),
               child: Row(
@@ -131,14 +176,20 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
                   ),
                   Container(
                     width: 44, height: 44,
-                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade300)),
-                    child: Center(child: Text('${_currentQuestionIndex + 1}/25', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2D3E2D)))),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey.shade300)
+                    ),
+                    child: Center(
+                      child: Text(
+                        '${_currentQuestionIndex + 1}/${_questions.length}',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2D3E2D))
+                      )
+                    ),
                   ),
                 ],
               ),
             ),
-            const Padding(padding: EdgeInsets.symmetric(horizontal: 24.0), child: Divider(thickness: 3, color: Color(0xFF769676))),
-            
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
@@ -160,13 +211,17 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
                                 const SizedBox(height: 20),
                                 const Center(child: Text('TRAVEL DNA QUIZ', style: TextStyle(fontSize: 9, letterSpacing: 2, color: Color(0xFF6B7280)))),
                                 const SizedBox(height: 12),
-                                Text(
-                                  _questions[index], 
-                                  textAlign: TextAlign.center, 
-                                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3E2D), height: 1.2)
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  child: Text(
+                                    _questions[index],
+                                    key: ValueKey<int>(index),
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3E2D), height: 1.2)
+                                  ),
                                 ),
                                 const SizedBox(height: 32),
-                                ..._options.map((option) => _buildOption(option)),
+                                ...List.generate(_options.length, (i) => _buildOption(i)),
                                 const SizedBox(height: 30),
                               ],
                             ),
@@ -178,14 +233,12 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
                 },
               ),
             ),
-            
-            // Bottom Decoration
             Stack(
               alignment: Alignment.bottomCenter,
               children: [
                 SizedBox(height: 60, width: double.infinity, child: CustomPaint(painter: QuizBackgroundPainter())),
                 const Padding(
-                  padding: EdgeInsets.only(bottom: 15.0), 
+                  padding: EdgeInsets.only(bottom: 15.0),
                   child: Text('Your preferences help us craft the perfect trip...', style: TextStyle(fontSize: 10, fontStyle: FontStyle.italic, color: Color(0xFF6B7280)))
                 ),
               ],
@@ -196,21 +249,48 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
     );
   }
 
-  Widget _buildOption(String text) {
+  Widget _buildOption(int index) {
+    bool isSelected = _selectedOptionIndex == index;
+    String text = _options[index];
+
+    List<Color> optionColors = [
+      const Color(0xFF769676),
+      const Color(0xFFA8C6A8),
+      const Color(0xFFD1DCD1),
+      const Color(0xFFE8EDE8),
+      const Color(0xFFF2F5F2),
+    ];
+
     return GestureDetector(
-      onTap: () => _handleAnswer(text),
-      child: Container(
+      onTap: () => _handleAnswer(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
         width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         decoration: BoxDecoration(
-          color: const Color(0xFFA8C6A8), 
-          borderRadius: BorderRadius.circular(30)
+          color: isSelected ? const Color(0xFF2D3E2D) : optionColors[index], 
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? Colors.white : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ] : [],
         ),
         child: Text(
-          text, 
-          textAlign: TextAlign.center, 
-          style: const TextStyle(fontSize: 15, color: Color(0xFF2D3E2D), fontWeight: FontWeight.w500)
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16,
+            color: isSelected ? Colors.white : const Color(0xFF2D3E2D),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500
+          )
         ),
       ),
     );

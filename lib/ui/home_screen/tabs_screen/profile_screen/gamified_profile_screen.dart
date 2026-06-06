@@ -83,6 +83,7 @@ class GamifiedProfileScreen extends StatelessWidget {
           final String? profileImageUrl = userData['profileImage'];
           final int streakCount = userData['streak'] ?? 12;
           final List<dynamic> badgesList = userData['badges'] ?? [];
+          final int challengeXp = userData['challengeXp'] ?? 0;
 
           return StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
@@ -91,8 +92,7 @@ class GamifiedProfileScreen extends StatelessWidget {
                 .snapshots(),
             builder: (context, postsSnapshot) {
               final userPosts = postsSnapshot.data?.docs ?? [];
-              
-              // ترتيب يدوي للأحدث لضمان استقرار العرض
+
               final sortedPosts = List.from(userPosts);
               sortedPosts.sort((a, b) {
                 final aData = a.data() as Map<String, dynamic>;
@@ -105,7 +105,7 @@ class GamifiedProfileScreen extends StatelessWidget {
               });
 
               final int placesCount = sortedPosts.length;
-              final int totalXp = placesCount * 1500;
+              final int totalXp = (placesCount * 1500) + challengeXp;
               final int level = (totalXp / 3000).floor() + 1;
 
               return SingleChildScrollView(
@@ -119,7 +119,7 @@ class GamifiedProfileScreen extends StatelessWidget {
                     const SizedBox(height: 25),
                     _buildStatsCard(placesCount.toString(), totalXp.toString(), badgesList.length.toString()),
                     const SizedBox(height: 35),
-                    _buildBadgesCirclesSection(),
+                    _buildBadgesCirclesSection(badgesList),
                     const SizedBox(height: 35),
                     _buildExperienceListSection(context, sortedPosts),
                     const SizedBox(height: 120),
@@ -144,7 +144,7 @@ class GamifiedProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 4),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 15)]
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 15)]
               ),
               child: CircleAvatar(
                 radius: 48,
@@ -194,13 +194,13 @@ class GamifiedProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF6D8B6D),
         borderRadius: BorderRadius.circular(35),
-        boxShadow: [BoxShadow(color: const Color(0xFF6D8B6D).withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [BoxShadow(color: const Color(0xFF6D8B6D).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
             child: const Icon(Icons.local_fire_department, color: Colors.orangeAccent, size: 35),
           ),
           const SizedBox(height: 15),
@@ -236,7 +236,7 @@ class GamifiedProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 8))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 8))],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -260,7 +260,7 @@ class GamifiedProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBadgesCirclesSection() {
+  Widget _buildBadgesCirclesSection(List<dynamic> badges) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -269,35 +269,65 @@ class GamifiedProfileScreen extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Unlocked Badges", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1B2612))),
+              Text("DNA Milestones", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1B2612))),
               Text("View All", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
         ),
         const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildBadgeCircle(Icons.search, "Hidden Gem\nFinder"),
-            _buildBadgeCircle(Icons.explore_outlined, "Early Bird\nWalker"),
-            _buildBadgeCircle(Icons.bolt, "Shutter\nMaster"),
-          ],
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            children: [
+              if (badges.contains('Comfort Zone Breaker'))
+                _buildSpecialBadgeCircle(Icons.psychology, "Comfort Zone\nBreaker"),
+              _buildBadgeCircle(Icons.search, "Hidden Gem\nFinder"),
+              _buildBadgeCircle(Icons.explore_outlined, "Early Bird\nWalker"),
+              _buildBadgeCircle(Icons.bolt, "Shutter\nMaster"),
+            ],
+          ),
         ),
       ],
     );
   }
 
   Widget _buildBadgeCircle(IconData icon, String label) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(color: const Color(0xFFF2F5ED), shape: BoxShape.circle, border: Border.all(color: Colors.grey.withValues(alpha: 0.1))),
-          child: Icon(icon, color: Colors.black, size: 28),
-        ),
-        const SizedBox(height: 10),
-        Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, height: 1.2)),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(right: 20.0),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(color: const Color(0xFFF2F5ED), shape: BoxShape.circle, border: Border.all(color: Colors.grey.withOpacity(0.1))),
+            child: Icon(icon, color: Colors.black, size: 28),
+          ),
+          const SizedBox(height: 10),
+          Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, height: 1.2)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSpecialBadgeCircle(IconData icon, String label) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 20.0),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFFEAB308), Color(0xFFF97316)]),
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: const Color(0xFFEAB308).withOpacity(0.4), blurRadius: 10)]
+            ),
+            child: Icon(icon, color: Colors.white, size: 28),
+          ),
+          const SizedBox(height: 10),
+          Text(label, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFFEAB308), height: 1.2)),
+        ],
+      ),
     );
   }
 
@@ -307,17 +337,11 @@ class GamifiedProfileScreen extends StatelessWidget {
       children: [
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text("Unlocked Badges", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1B2612))),
-              Text("View All", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
-            ],
-          ),
+          child: Text("Journey Highlights", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1B2612))),
         ),
         const SizedBox(height: 20),
         if (posts.isEmpty)
-          const Center(child: Padding(padding: EdgeInsets.all(40), child: Text("No posts found.")))
+          const Center(child: Padding(padding: EdgeInsets.all(40), child: Text("No memories yet. Start exploring!")))
         else
           ListView.builder(
             shrinkWrap: true,
@@ -341,7 +365,7 @@ class GamifiedProfileScreen extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF1F4EE), // اللون الرمادي المخضر الفاتح من الصورة
+          color: const Color(0xFFF1F4EE),
           borderRadius: BorderRadius.circular(25),
         ),
         child: Row(
@@ -364,15 +388,15 @@ class GamifiedProfileScreen extends StatelessWidget {
                 children: [
                   Text(post['location'] ?? "Unknown", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF1B2612))),
                   const SizedBox(height: 8),
-                  Row(
+                  const Row(
                     children: [
-                      const Icon(Icons.location_on, size: 14, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      const Text("1 PLACES", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.w900)),
-                      const SizedBox(width: 20),
-                      const Icon(Icons.bolt, size: 14, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      const Text("1500", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.w900)),
+                      Icon(Icons.location_on, size: 14, color: Colors.grey),
+                      SizedBox(width: 4),
+                      Text("1 PLACES", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.w900)),
+                      SizedBox(width: 20),
+                      Icon(Icons.bolt, size: 14, color: Colors.grey),
+                      SizedBox(width: 4),
+                      Text("1500", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.w900)),
                     ],
                   ),
                 ],

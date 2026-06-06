@@ -81,7 +81,7 @@ class QuizScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 const FeatureItem(
-                  icon: AppAssets.exploreIcon, 
+                  icon: AppAssets.exploreIcon,
                   text: 'Get Tailored Recommendations',
                 ),
                 const SizedBox(height: 40),

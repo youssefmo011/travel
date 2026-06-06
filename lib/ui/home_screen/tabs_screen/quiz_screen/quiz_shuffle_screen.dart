@@ -1,299 +1,338 @@
+import 'dart:convert';
+import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/assets/app_assets.dart';
 import '../explore_screen/shuffle_result_screen.dart';
 
-class QuizShuffleScreen extends StatelessWidget {
+class QuizShuffleScreen extends StatefulWidget {
   static const String routeName = 'quiz-shuffle';
 
   const QuizShuffleScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // استلام الشخصية لتقديم تحدي عكس ميولها
-    final String personality = ModalRoute.of(context)?.settings.arguments as String? ?? "Dreamer";
-    final challenge = _getChallengeData(personality);
+  State<QuizShuffleScreen> createState() => _QuizShuffleScreenState();
+}
 
+class _QuizShuffleScreenState extends State<QuizShuffleScreen> with TickerProviderStateMixin {
+  bool _isLoading = true;
+  bool _isSuccessOverlay = false;
+  Map<String, dynamic>? _challenge;
+  late AnimationController _rotationController;
+  late AnimationController _pulseController;
+  late AnimationController _badgeController;
+
+  int _loadingMsgIndex = 0;
+  final List<String> _loadingMessages = [
+    "Analyzing your boundaries...",
+    "Searching for hidden local gems...",
+    "AI is crafting a unique challenge...",
+    "Finding the perfect vibe for you...",
+    "Preparing your next adventure..."
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+    _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _badgeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000));
+
+    // Rotate loading messages
+    _startLoadingMessages();
+  }
+
+  void _startLoadingMessages() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted || !_isLoading) return false;
+      setState(() {
+        _loadingMsgIndex = (_loadingMsgIndex + 1) % _loadingMessages.length;
+      });
+      return true;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isLoading && _challenge == null) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      _generateAIChallenge(args);
+    }
+  }
+
+  Future<void> _generateAIChallenge(Map<String, dynamic>? args) async {
+    final String personality = args?['personality'] ?? "Explorer";
+    final Map traits = args?['traits'] ?? {};
+    
+    // Add randomness to prompt
+    final List<String> categories = ["Social", "Gastronomy", "Extreme Adventure", "Local Tradition", "Mindfulness"];
+    final String randomCategory = categories[Random().nextInt(categories.length)];
+    final int seed = DateTime.now().millisecondsSinceEpoch;
+
+    try {
+      final model = GenerativeModel(
+        model: 'gemini-1.5-flash',
+        apiKey: 'AIzaSyCbvejXRoxKldEgpu5V3loc7e42Qt7Mm1k',
+      );
+
+      final prompt = """
+        Seed: $seed. Category Focus: $randomCategory.
+        User DNA: $personality, $traits.
+        Task: Generate a UNIQUE 'Shuffle Challenge' that is COMPLETELY DIFFERENT from previous ones.
+        The challenge must push them out of their comfort zone.
+        
+        Return ONLY a JSON object with:
+        'vibe': short catchy name,
+        'main_text': one punchy mission sentence,
+        'sub_text': 2 sentences explaining why and the benefit,
+        'stat_name': skill improved (Spontaneity, Courage, etc.),
+        'stat_boost': '+X%',
+        'image_keyword': specific keyword for an Unsplash-style photo.
+      """;
+
+      final response = await model.generateContent([Content.text(prompt)]);
+      final String aiResponse = response.text ?? "{}";
+
+      await Future.delayed(const Duration(seconds: 4));
+
+      if (mounted) {
+        setState(() {
+          _challenge = jsonDecode(aiResponse);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _challenge = _getFallbackChallenge();
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleAccept() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'challengeXp': FieldValue.increment(500),
+        'badges': FieldValue.arrayUnion(['Comfort Zone Breaker']),
+      }, SetOptions(merge: true));
+
+      setState(() => _isSuccessOverlay = true);
+      _badgeController.forward();
+
+      await Future.delayed(const Duration(seconds: 3));
+
+      if (mounted) {
+        Navigator.pushReplacementNamed(
+          context,
+          ShuffleResultScreen.routeName,
+          arguments: _challenge
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    _pulseController.dispose();
+    _badgeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFCF9), // لون الخلفية الكريمي
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF2D3E2D), size: 20),
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert, color: Color(0xFF2D3E2D)),
-          ),
+      backgroundColor: const Color(0xFFFDFCF9),
+      body: Stack(
+        children: [
+          _isLoading ? _buildLoading() : _buildContent(),
+          if (_isSuccessOverlay) _buildSuccessOverlay(),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10),
-            child: Column(
-              children: [
-                _buildChallengeCard(context, challenge),
-                const SizedBox(height: 32),
-                const Text(
-                  "New challenges refresh every 24 hours\nbased on your seeker profile.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF9CA3AF),
-                    height: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
+    );
+  }
+
+  Widget _buildLoading() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          RotationTransition(
+            turns: _rotationController,
+            child: const Icon(Icons.auto_awesome, size: 80, color: Color(0xFF769676)),
+          ),
+          const SizedBox(height: 30),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Text(
+              _loadingMessages[_loadingMsgIndex],
+              key: ValueKey<int>(_loadingMsgIndex),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF2D3E2D)),
             ),
           ),
+          const SizedBox(height: 10),
+          const Text("Consulting Travel AI Engine...", style: TextStyle(fontSize: 12, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_ios, size: 20),
+              ),
+            ),
+            _buildChallengeCard(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildChallengeCard(BuildContext context, Map<String, dynamic> challenge) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // SHUFFLE RESULT Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.shuffle, size: 14, color: Colors.grey.shade400),
-              const SizedBox(width: 8),
-              Text(
-                "SHUFFLE RESULT".toUpperCase(),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                  color: Colors.grey.shade400,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Title
-          const Text(
-            "Step Outside Your\nComfort Zone!",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D3E2D),
-              height: 1.2,
+  Widget _buildChallengeCard() {
+    return ScaleTransition(
+      scale: Tween(begin: 1.0, end: 1.02).animate(_pulseController),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)],
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.shuffle, size: 14, color: Colors.grey),
+                const SizedBox(width: 8),
+                Text("AI DNA CHALLENGE", style: TextStyle(letterSpacing: 1.5, fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
+              ],
             ),
-          ),
-          const SizedBox(height: 28),
-          
-          // Image with Vibe Label
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Image.asset(
-                  challenge['image'], 
-                  height: 220,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
+            const SizedBox(height: 16),
+            const Text("Step Outside Your\nComfort Zone!", textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF2D3E2D))),
+            const SizedBox(height: 24),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: CachedNetworkImage(
+                imageUrl: "https://picsum.photos/seed/${_challenge?['vibe']}_${Random().nextInt(100)}/600/400",
+                height: 220, width: double.infinity, fit: BoxFit.cover,
+                placeholder: (context, url) => Container(color: Colors.grey.shade100, child: const Center(child: CircularProgressIndicator())),
               ),
-              Positioned(
-                bottom: 12,
-                left: 12,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.music_note, color: Colors.white, size: 16),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Vibe: ${challenge['vibe']}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 28),
-          
-          // Descriptions
-          Text(
-            challenge['main_text'],
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D3E2D),
-              height: 1.3,
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            challenge['sub_text'],
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Color(0xFF6B7280),
-              height: 1.4,
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(color: const Color(0xFF769676).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+              child: Text(_challenge?['vibe'] ?? "Vibe", style: const TextStyle(color: Color(0xFF769676), fontWeight: FontWeight.bold, fontSize: 12)),
             ),
-          ),
-          
-          const SizedBox(height: 32),
-          
-          // Stat boost - Social Energy
-          Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.trending_up, size: 18, color: Color(0xFF2D3E2D)),
-                      const SizedBox(width: 8),
-                      Text(
-                        challenge['stat_name'],
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF2D3E2D),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    challenge['stat_boost'],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3E2D),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: 0.7,
-                  minHeight: 10,
-                  backgroundColor: const Color(0xFFF2F4F2),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFE2E9D1)),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 40),
-          
-          // Accept Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, ShuffleResultScreen.routeName);
-              },
+            const SizedBox(height: 16),
+            Text(_challenge?['main_text'] ?? "", textAlign: TextAlign.center, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2D3E2D))),
+            const SizedBox(height: 12),
+            Text(_challenge?['sub_text'] ?? "", textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280), height: 1.4)),
+            const SizedBox(height: 32),
+            _buildStatBoost(),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: _handleAccept,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8BA68B), 
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
+                backgroundColor: const Color(0xFF769676),
+                minimumSize: const Size(double.infinity, 60),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 elevation: 0,
               ),
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                  Icon(Icons.bolt, color: Colors.white),
                   SizedBox(width: 10),
-                  Text(
-                    "Accept Challenge",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text("Accept & Earn +500 XP", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                 ],
               ),
             ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Maybe later", style: TextStyle(color: Colors.grey)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatBoost() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(_challenge?['stat_name'] ?? "Skill", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF2D3E2D))),
+            Text(_challenge?['stat_boost'] ?? "0%", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF769676))),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: LinearProgressIndicator(
+            value: 0.7,
+            minHeight: 8,
+            backgroundColor: const Color(0xFFF1F4EE),
+            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFE2E9D1)),
           ),
-          
-          const SizedBox(height: 16),
-          
-          // Reject button
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.close, size: 16, color: Color(0xFF9CA3AF)),
-                SizedBox(width: 4),
-                Text(
-                  "Not today",
-                  style: TextStyle(
-                    color: Color(0xFF9CA3AF),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSuccessOverlay() {
+    return Container(
+      color: Colors.black.withOpacity(0.9),
+      width: double.infinity,
+      height: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ScaleTransition(
+            scale: CurvedAnimation(parent: _badgeController, curve: Curves.elasticOut),
+            child: Container(
+              padding: const EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(colors: [Color(0xFFEAB308), Color(0xFFF97316)]),
+                boxShadow: [BoxShadow(color: const Color(0xFFEAB308).withOpacity(0.5), blurRadius: 40, spreadRadius: 10)],
+              ),
+              child: const Icon(Icons.psychology, color: Colors.white, size: 80),
             ),
           ),
+          const SizedBox(height: 40),
+          const Text("DNA UPGRADED!", style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: 3)),
+          const SizedBox(height: 10),
+          const Text("Comfort Zone Breaker", style: TextStyle(color: Color(0xFFEAB308), fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 10),
+          const Text("+500 XP Added to Profile", style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const SizedBox(height: 50),
+          const CircularProgressIndicator(color: Colors.white),
         ],
       ),
     );
   }
 
-  Map<String, dynamic> _getChallengeData(String personality) {
-    // تخصيص التحدي بناءً على الشخصية لكسر منطقة الراحة
-    if (personality == "The dreamer" || personality == "Cultural seeker") {
-      return {
-        "vibe": "Midnight Jazz",
-        "main_text": "Try a Jazz Club tonight instead of your usual quiet cafe.",
-        "sub_text": "Discover a soulful atmosphere that challenges your typical evening routine.",
-        "stat_name": "Social Energy",
-        "stat_boost": "+20%",
-        "image": AppAssets.storyPhoto,
-      };
-    } else {
-      return {
-        "vibe": "Zen Morning",
-        "main_text": "Try a Silent Meditation instead of your usual loud party.",
-        "sub_text": "Find inner peace and balance by stepping away from the crowd.",
-        "stat_name": "Mindfulness",
-        "stat_boost": "+15%",
-        "image": AppAssets.photoTravel,
-      };
-    }
+  Map<String, dynamic> _getFallbackChallenge() {
+    return {"vibe": "Local Hero", "main_text": "Visit a local market and talk to a vendor.", "sub_text": "Break your shell.", "stat_name": "Social Energy", "stat_boost": "+15%", "image_keyword": "market"};
   }
 }
