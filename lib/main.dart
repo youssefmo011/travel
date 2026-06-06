@@ -26,6 +26,8 @@ import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/personality_qui
 import 'package:untitled1/ui/home_screen/tabs_screen/quiz_screen/quiz_shuffle_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/trip_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/treasure_walk_screen.dart';
+// إضافة استيراد الصفحة الثالثة الجديدة هنا
+import 'package:untitled1/ui/home_screen/tabs_screen/trip_screen/adventure_summary_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/home_tab/widgets/add_post_screen.dart';
 import 'package:untitled1/ui/home_screen/tabs_screen/home_tab/widgets/post_details_screen.dart';
 import 'package:untitled1/ui/login_screen/login_screen.dart';
@@ -55,7 +57,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Travel App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF769372)),
         useMaterial3: true,
       ),
       home: const SplashScreen(),
@@ -87,6 +89,8 @@ class MyApp extends StatelessWidget {
         QuizShuffleScreen.routeName: (context) => const QuizShuffleScreen(),
         TripScreen.routeName: (context) => const TripScreen(),
         TreasureWalkScreen.routeName: (context) => const TreasureWalkScreen(),
+        // تسجيل مسار الصفحة الجديدة هنا
+        AdventureSummaryScreen.routeName: (context) => const AdventureSummaryScreen(),
         AddPostScreen.routeName: (context) => const AddPostScreen(),
       },
       onGenerateRoute: (settings) {
