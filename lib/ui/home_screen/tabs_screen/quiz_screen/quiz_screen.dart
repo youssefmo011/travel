@@ -15,103 +15,103 @@ class QuizScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 25.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: InkWell(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
+                _buildHeader(context),
+                const SizedBox(height: 40),
                 const Text(
                   'Ready to find your vibe?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.secondary,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textMain,
                   ),
                 ),
-                const SizedBox(height: 12),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
-                  child: Text(
-                    'Discover your perfect travel vibe in under 2 minutes. The AI knows best!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textGrey,
-                      height: 1.5,
-                    ),
+                const SizedBox(height: 15),
+                const Text(
+                  'Discover your perfect travel personality in under 2 minutes. Our AI will guide your next adventure!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColors.textGrey,
+                    height: 1.5,
                   ),
                 ),
                 const SizedBox(height: 40),
-                Center(
-                  child: Image.asset(
-                    AppAssets.photoTravel,
-                    height: 200,
-                  ),
-                ),
+                _buildIllustration(),
                 const SizedBox(height: 40),
                 const FeatureItem(
                   icon: AppAssets.exploreIcon,
                   text: 'Instant Personalized Matches',
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 15),
                 const FeatureItem(
-                  icon: AppAssets.lockIcon,
-                  text: 'Unlock Hidden Gems',
-                ),
-                const SizedBox(height: 16),
-                const FeatureItem(
-                  icon: AppAssets.exploreIcon,
-                  text: 'Get Tailored Recommendations',
+                  icon: AppAssets.streakIcon,
+                  text: 'Unlock Exclusive Rewards',
                 ),
                 const SizedBox(height: 40),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, PersonalityQuizScreen.routeName);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Text(
-                      'start your quiz',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
+                _buildStartButton(context),
                 const SizedBox(height: 100),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.maybePop(context),
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.close, color: AppColors.primary, size: 20),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIllustration() {
+    return Container(
+      height: 220,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        image: const DecorationImage(
+          image: AssetImage(AppAssets.photoTravel),
+          fit: BoxFit.contain,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStartButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 60,
+      child: ElevatedButton(
+        onPressed: () => Navigator.pushNamed(context, PersonalityQuizScreen.routeName),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 0,
+        ),
+        child: const Text(
+          'Start Discovery Quiz',
+          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ),
     );

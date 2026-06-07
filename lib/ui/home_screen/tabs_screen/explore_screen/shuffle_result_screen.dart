@@ -28,9 +28,8 @@ class _ShuffleResultScreenState extends State<ShuffleResultScreen> with TickerPr
     );
     _scaleAnimation = CurvedAnimation(parent: _celebrationController, curve: Curves.elasticOut);
 
-    // Show celebration for 2.5 seconds then show details
     _celebrationController.forward();
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 5), () {
       if (mounted) {
         setState(() => _showCelebration = false);
       }

@@ -90,7 +90,6 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
   }
 
   void _finishQuiz() async {
-    // Standardizing names for UI consistency (Serene Seeker, Bold Explorer, etc.)
     Map<String, int> scores = {
       "Bold Explorer": explorerScore,
       "Serene Seeker": dreamerScore,
@@ -101,17 +100,14 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
 
     String finalPersonality = scores.entries.reduce((a, b) => a.value > b.value ? a : b).key;
     
-    // Calculate percentages for each trait
     double natureP = (natureScore / 15) * 100;
     double thrillP = (thrillScore / 20) * 100;
     double culturalP = (culturalScore / 20) * 100;
     double socialP = (socialScore / 25) * 100;
 
-    // Save to Hive for local session
     var box = await Hive.openBox('user_prefs');
     await box.put('personality', finalPersonality);
 
-    // CRITICAL: Save to Firestore to unlock the Badge & XP
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
@@ -120,7 +116,6 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
           'badges': FieldValue.arrayUnion(['DNA Discovered']),
           'quizXp': FieldValue.increment(1000),
         }, SetOptions(merge: true));
-        debugPrint("Quiz results saved to Firestore successfully.");
       } catch (e) {
         debugPrint("Error saving quiz results: $e");
       }

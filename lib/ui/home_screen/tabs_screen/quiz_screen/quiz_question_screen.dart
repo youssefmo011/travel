@@ -114,7 +114,6 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         _selectedOptionIndex = null;
       });
     } else {
-      // حساب الشخصية الأكثر تكراراً
       String personality = _calculatePersonality();
       
       Navigator.pushNamed(
@@ -123,7 +122,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         arguments: {
           "personality": personality,
           "vibes": _selectedVibes,
-          "confidence": 85 + (placesCount % 10), // رقم افتراضي للثقة
+          "confidence": 85 + (_selectedVibes.length % 10),
           "nature": _selectedVibes.where((v) => v == 'Nature').length * 20,
         },
       );
@@ -147,9 +146,6 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       default: return 'Explorer';
     }
   }
-
-  // نحتاج لمتغير placesCount لحساب الثقة، سأستخدم طول قائمة vibes كبديل بسيط
-  int get placesCount => _selectedVibes.length;
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +200,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.secondary,
+                            color: AppColors.primaryDark,
                           ),
                           children: [
                             TextSpan(text: currentQuestion.question),
@@ -271,15 +267,8 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -292,7 +281,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
                   'Discovery Mode',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.secondary,
+                    color: AppColors.primaryDark,
                   ),
                 ),
                 Text(
