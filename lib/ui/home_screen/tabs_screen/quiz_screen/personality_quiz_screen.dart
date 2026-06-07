@@ -62,48 +62,76 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
     "Totally disagree"
   ];
 
-  void _handleAnswer(int index) async {
-    setState(() {
-      _selectedOptionIndex = index;
-    });
+  // Answers list to allow reversing scores on back navigation
+  // Each entry is a list of score keys incremented for that question
+  final List<Map<String, int>> _answerHistory = [];
 
+  void _handleAnswer(int index) async {
+    setState(() => _selectedOptionIndex = index);
     await Future.delayed(const Duration(milliseconds: 450));
 
-    int value = 5 - index; 
-    int qIndex = _currentQuestionIndex + 1;
+    // value: Totally agree=5 … Totally disagree=1
+    final int value = 5 - index;
+    final int qIndex = _currentQuestionIndex + 1;
 
-    if ([1, 5, 9, 22, 25].contains(qIndex)) explorerScore += value;
-    if ([6, 14, 18, 12].contains(qIndex)) dreamerScore += value;
-    if ([4, 7, 24, 20, 23].contains(qIndex)) socialScore += value;
-    if ([11, 19, 15, 8].contains(qIndex)) culturalScore += value;
-    if ([3, 13, 16, 21].contains(qIndex)) thrillScore += value;
-    if ([6, 14, 16].contains(qIndex)) natureScore += value;
+    // Record which scores were incremented and by how much
+    final Map<String, int> deltas = {};
+
+    void add(String key, int v) {
+      switch (key) {
+        case 'explorer':  explorerScore  += v; break;
+        case 'dreamer':   dreamerScore   += v; break;
+        case 'social':    socialScore    += v; break;
+        case 'cultural':  culturalScore  += v; break;
+        case 'thrill':    thrillScore    += v; break;
+        case 'nature':    natureScore    += v; break;
+      }
+      deltas[key] = (deltas[key] ?? 0) + v;
+    }
+
+    if ([1, 5, 9, 22, 25].contains(qIndex)) add('explorer', value);
+    if ([6, 14, 18, 12].contains(qIndex))   add('dreamer',  value);
+    if ([4, 7, 24, 20, 23].contains(qIndex)) add('social',  value);
+    if ([11, 19, 15, 8].contains(qIndex))   add('cultural', value);
+    if ([3, 13, 16, 21].contains(qIndex))   add('thrill',   value);
+    if ([6, 14, 16].contains(qIndex))       add('nature',   value);
+
+    _answerHistory.add(deltas);
 
     if (_currentQuestionIndex < _questions.length - 1) {
-      setState(() {
-        _selectedOptionIndex = null;
-      });
-      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      setState(() => _selectedOptionIndex = null);
+      _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut);
     } else {
       _finishQuiz();
     }
   }
 
   void _finishQuiz() async {
-    Map<String, int> scores = {
-      "Bold Explorer": explorerScore,
-      "Serene Seeker": dreamerScore,
+    final Map<String, int> scores = {
+      "Bold Explorer":    explorerScore,
+      "Serene Seeker":    dreamerScore,
       "Social Butterfly": socialScore,
-      "Culture Seeker": culturalScore,
-      "Thrill Chaser": thrillScore,
+      "Culture Seeker":   culturalScore,
+      "Thrill Chaser":    thrillScore,
     };
 
-    String finalPersonality = scores.entries.reduce((a, b) => a.value > b.value ? a : b).key;
-    
-    double natureP = (natureScore / 15) * 100;
-    double thrillP = (thrillScore / 20) * 100;
-    double culturalP = (culturalScore / 20) * 100;
-    double socialP = (socialScore / 25) * 100;
+    final String finalPersonality =
+        scores.entries.reduce((a, b) => a.value > b.value ? a : b).key;
+
+    // Consistent normalization: each score / (questions_for_that_trait * max_value_per_q)
+    // explorer: 5 questions × 5 = 25 max
+    // dreamer:  4 questions × 5 = 20 max
+    // social:   5 questions × 5 = 25 max
+    // cultural: 4 questions × 5 = 20 max
+    // thrill:   4 questions × 5 = 20 max
+    // nature:   3 questions × 5 = 15 max
+    final double natureP    = (natureScore   / 15).clamp(0.0, 1.0) * 100;
+    final double thrillP    = (thrillScore   / 20).clamp(0.0, 1.0) * 100;
+    final double culturalP  = (culturalScore / 20).clamp(0.0, 1.0) * 100;
+    final double socialP    = (socialScore   / 25).clamp(0.0, 1.0) * 100;
+    final double relaxP     = (dreamerScore  / 20).clamp(0.0, 1.0) * 100;
 
     var box = await Hive.openBox('user_prefs');
     await box.put('personality', finalPersonality);
@@ -128,13 +156,24 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
       arguments: {
         "personality": finalPersonality,
         "traits": {
-          "Nature": natureP.toInt(),
+          "Nature":    natureP.toInt(),
           "Adventure": thrillP.toInt(),
-          "Culture": culturalP.toInt(),
-          "Social": socialP.toInt(),
-          "Relaxation": (dreamerScore * 5).toInt(), 
+          "Culture":   culturalP.toInt(),
+          "Social":    socialP.toInt(),
+          "Relaxation": (dreamerScore * 5).toInt(),
         },
         "raw_scores": scores,
+        // Detailed score breakdown so AI can reason precisely
+        "score_detail": {
+          "explorerScore":  explorerScore,
+          "dreamerScore":   dreamerScore,
+          "socialScore":    socialScore,
+          "culturalScore":  culturalScore,
+          "thrillScore":    thrillScore,
+          "natureScore":    natureScore,
+          "dominantStyle":  finalPersonality,
+          "quizType":       "personality_25q",
+        },
       }
     );
   }
@@ -162,7 +201,24 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
                   IconButton(
                     onPressed: () {
                       if (_currentQuestionIndex > 0) {
-                        _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                        // Reverse the scores from the previous answer
+                        if (_answerHistory.isNotEmpty) {
+                          final Map<String, int> last = _answerHistory.removeLast();
+                          last.forEach((key, v) {
+                            switch (key) {
+                              case 'explorer':  explorerScore  -= v; break;
+                              case 'dreamer':   dreamerScore   -= v; break;
+                              case 'social':    socialScore    -= v; break;
+                              case 'cultural':  culturalScore  -= v; break;
+                              case 'thrill':    thrillScore    -= v; break;
+                              case 'nature':    natureScore    -= v; break;
+                            }
+                          });
+                        }
+                        setState(() => _selectedOptionIndex = null);
+                        _pageController.previousPage(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut);
                       } else {
                         Navigator.pop(context);
                       }

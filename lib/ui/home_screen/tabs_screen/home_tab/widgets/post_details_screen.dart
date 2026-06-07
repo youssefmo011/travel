@@ -181,28 +181,68 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
 
   Widget _buildCommentList() {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('posts').doc(widget.postId).collection('comments').orderBy('timestamp', descending: true).snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.postId)
+          .collection('comments')
+          .orderBy('timestamp', descending: true)
+          .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
         final comments = snapshot.data!.docs;
-        if (comments.isEmpty) return const Center(child: Text("No comments yet.", style: TextStyle(color: Colors.grey, fontSize: 12)));
+        if (comments.isEmpty) {
+          return const Center(
+              child: Text("No comments yet.",
+                  style: TextStyle(color: Colors.grey, fontSize: 12)));
+        }
         return ListView.builder(
-          shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-          itemCount: comments.length > 5 ? 5 : comments.length,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: comments.length,
           itemBuilder: (context, index) {
-            final comment = comments[index].data() as Map<String, dynamic>;
-            String? cUserImg = comment['userImage'];
+            final comment =
+                comments[index].data() as Map<String, dynamic>;
+            final String? cUserImg = comment['userImage'];
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                CircleAvatar(radius: 22, backgroundColor: const Color(0xFFE8F0E8), backgroundImage: (cUserImg != null && cUserImg.startsWith('http')) ? NetworkImage(cUserImg) : const AssetImage(AppAssets.profilePhoto) as ImageProvider),
-                const SizedBox(width: 15),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFFF9F9F9), borderRadius: BorderRadius.circular(15)), child: Text(comment['text'] ?? "", style: const TextStyle(fontSize: 14))),
-                  const SizedBox(height: 4),
-                  Text(comment['userName'] ?? "EXPLORER", style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-                ])),
-              ]),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: const Color(0xFFE8F0E8),
+                    backgroundImage: (cUserImg != null &&
+                            cUserImg.startsWith('http'))
+                        ? NetworkImage(cUserImg)
+                        : const AssetImage(AppAssets.profilePhoto)
+                            as ImageProvider,
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                              color: const Color(0xFFF9F9F9),
+                              borderRadius: BorderRadius.circular(15)),
+                          child: Text(comment['text'] ?? "",
+                              style: const TextStyle(fontSize: 14)),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          comment['userName'] ?? "EXPLORER",
+                          style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         );

@@ -220,26 +220,89 @@ class GamifiedProfileScreen extends StatelessWidget {
   }
 
   Widget _buildBadgesSection(List<dynamic> badges) {
+    // Badge icon mapping — matches what the AI returns in badge_icon field
+    const Map<String, IconData> iconMap = {
+      'psychology':            Icons.psychology,
+      'emoji_events':          Icons.emoji_events,
+      'local_fire_department': Icons.local_fire_department,
+      'explore':               Icons.explore,
+      'self_improvement':      Icons.self_improvement,
+      'directions_walk':       Icons.directions_walk,
+      'restaurant':            Icons.restaurant,
+      'nightlife':             Icons.nightlife,
+      'forest':                Icons.forest,
+      'museum':                Icons.museum,
+      'camera_alt':            Icons.camera_alt,
+      'hiking':                Icons.hiking,
+      'wb_sunny':              Icons.wb_sunny,
+      'people':                Icons.people,
+      'bolt':                  Icons.bolt,
+      // legacy / static badges
+      'DNA Discovered':        Icons.biotech,
+      'Comfort Zone Breaker':  Icons.psychology,
+    };
+
+    // Build display list — each badge is just a string (the name)
+    final List<String> badgeNames = badges
+        .map((b) => b.toString())
+        .toSet() // deduplicate
+        .toList();
+
+    // Pick an icon for a badge name: try exact key match, then fallback
+    IconData _iconFor(String name) {
+      if (iconMap.containsKey(name)) return iconMap[name]!;
+      // keyword scan
+      final lower = name.toLowerCase();
+      if (lower.contains('food') || lower.contains('street')) return Icons.restaurant;
+      if (lower.contains('walk') || lower.contains('wander')) return Icons.directions_walk;
+      if (lower.contains('fire') || lower.contains('breaker')) return Icons.local_fire_department;
+      if (lower.contains('silent') || lower.contains('mind')) return Icons.self_improvement;
+      if (lower.contains('pioneer') || lower.contains('urban')) return Icons.explore;
+      if (lower.contains('hero') || lower.contains('people')) return Icons.people;
+      if (lower.contains('nature') || lower.contains('forest')) return Icons.forest;
+      if (lower.contains('dna') || lower.contains('discover')) return Icons.biotech;
+      return Icons.emoji_events;
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24),
-          child: Text("DNA Milestones", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-        ),
-        const SizedBox(height: 15),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
+        Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _badgeItem(Icons.psychology, "Zone Breaker", true),
-              _badgeItem(Icons.search, "Gem Finder", false),
-              _badgeItem(Icons.explore_outlined, "Early Bird", false),
-              _badgeItem(Icons.bolt, "Master", false),
+              const Text("DNA Milestones",
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textMain)),
+              Text("${badgeNames.length} earned",
+                  style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600)),
             ],
           ),
         ),
+        const SizedBox(height: 15),
+        if (badgeNames.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Text("Complete challenges to earn badges!",
+                style: TextStyle(color: AppColors.textGrey, fontSize: 13)),
+          )
+        else
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: badgeNames.asMap().entries.map((entry) {
+                final bool isFirst = entry.key == 0;
+                return _badgeItem(_iconFor(entry.value), entry.value, isFirst);
+              }).toList(),
+            ),
+          ),
       ],
     );
   }
@@ -252,13 +315,41 @@ class GamifiedProfileScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(15),
             decoration: BoxDecoration(
-              color: isSpecial ? AppColors.accent : AppColors.surface,
+              gradient: isSpecial
+                  ? const LinearGradient(
+                      colors: [Color(0xFFEAB308), Color(0xFFF97316)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isSpecial ? null : AppColors.surface,
               shape: BoxShape.circle,
+              boxShadow: isSpecial
+                  ? [BoxShadow(
+                      color: const Color(0xFFEAB308).withOpacity(0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )]
+                  : null,
             ),
-            child: Icon(icon, color: isSpecial ? Colors.white : AppColors.primary, size: 25),
+            child: Icon(icon,
+                color: isSpecial ? Colors.white : AppColors.primary, size: 25),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+          SizedBox(
+            width: 72,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: isSpecial ? AppColors.primaryDark : AppColors.textMain,
+              ),
+            ),
+          ),
         ],
       ),
     );

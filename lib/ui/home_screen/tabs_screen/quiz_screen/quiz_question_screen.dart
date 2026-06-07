@@ -115,15 +115,42 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       });
     } else {
       String personality = _calculatePersonality();
-      
+
+      // Build trait scores as percentages from vibe counts
+      Map<String, int> counts = {};
+      for (var v in _selectedVibes) {
+        counts[v] = (counts[v] ?? 0) + 1;
+      }
+      final int total = _selectedVibes.length;
+
+      // Map quiz answers to questions for full context
+      final List<Map<String, String>> answeredQuestions = [];
+      for (int i = 0; i < _questions.length && i < _selectedVibes.length; i++) {
+        answeredQuestions.add({
+          "question": "${_questions[i].question}${_questions[i].highlightWord}",
+          "answer": _questions[i].options
+              .firstWhere((o) => o.vibe == _selectedVibes[i],
+                  orElse: () => _questions[i].options[0])
+              .title,
+          "vibe": _selectedVibes[i],
+        });
+      }
+
       Navigator.pushNamed(
-        context, 
+        context,
         QuizAnalysisScreen.routeName,
         arguments: {
           "personality": personality,
           "vibes": _selectedVibes,
+          "traits": {
+            "Nature":   ((counts['Nature']    ?? 0) / total * 100).toInt(),
+            "Adventure":((counts['Adventure'] ?? 0) / total * 100).toInt(),
+            "Culture":  ((counts['City']      ?? 0) / total * 100).toInt(),
+            "Social":   ((counts['City']      ?? 0) / total * 100).toInt(),
+            "Luxury":   ((counts['Luxury']    ?? 0) / total * 100).toInt(),
+          },
+          "answered_questions": answeredQuestions,
           "confidence": 85 + (_selectedVibes.length % 10),
-          "nature": _selectedVibes.where((v) => v == 'Nature').length * 20,
         },
       );
     }
@@ -134,16 +161,17 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
     for (var v in _selectedVibes) {
       counts[v] = (counts[v] ?? 0) + 1;
     }
-    
-    var sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+
+    var sorted = counts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
     String topVibe = sorted.first.key;
 
     switch (topVibe) {
       case 'Adventure': return 'Thrill Chaser';
-      case 'Nature': return 'Explorer';
-      case 'City': return 'Social Butterfly';
-      case 'Luxury': return 'Luxury Seeker';
-      default: return 'Explorer';
+      case 'Nature':    return 'Explorer';
+      case 'City':      return 'Social Butterfly';
+      case 'Luxury':    return 'Luxury Seeker';
+      default:          return 'Explorer';
     }
   }
 
