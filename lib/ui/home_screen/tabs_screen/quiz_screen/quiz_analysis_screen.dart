@@ -25,9 +25,9 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen>
     "Consulting travel AI...",
     "Analyzing your unique vibe...",
     "Decoding your Travel DNA...",
-    "Scouring the globe for matches...",
+    "Scouring Egypt for matches...",
     "Crafting your travel persona...",
-    "Finding your perfect destinations...",
+    "Finding your perfect Egyptian destinations...",
   ];
   late Timer _messageTimer;
 
@@ -61,27 +61,23 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen>
     }
   }
 
-  /// Build a rich, structured prompt from whatever quiz data was passed in.
   String _buildPrompt(Map<String, dynamic> data) {
-    final String personality = data['personality'] ?? 'Traveler';
+    final String personality = data['personality'] ?? 'Explore';
     final Map traits = data['traits'] ?? {};
     final Map scoreDetail = data['score_detail'] ?? {};
     final List answeredQuestions = data['answered_questions'] ?? [];
     final List vibes = data['vibes'] ?? [];
 
-    // ── Traits block ────────────────────────────────────────────────────────
     final StringBuffer traitsBlock = StringBuffer();
     if (traits.isNotEmpty) {
       traits.forEach((k, v) => traitsBlock.writeln('  - $k: $v%'));
     }
 
-    // ── Detailed scores (25-question quiz) ──────────────────────────────────
     final StringBuffer scoresBlock = StringBuffer();
     if (scoreDetail.isNotEmpty) {
       scoreDetail.forEach((k, v) => scoresBlock.writeln('  - $k: $v'));
     }
 
-    // ── Visual quiz answers (5-question quiz) ───────────────────────────────
     final StringBuffer answersBlock = StringBuffer();
     if (answeredQuestions.isNotEmpty) {
       for (final q in answeredQuestions) {
@@ -92,27 +88,18 @@ class _QuizAnalysisScreenState extends State<QuizAnalysisScreen>
       answersBlock.writeln('  Selected vibes in order: ${vibes.join(', ')}');
     }
 
-    // ── Dominant trait for destination weighting ────────────────────────────
     String dominantTrait = 'Balanced';
     if (traits.isNotEmpty) {
       final sorted = traits.entries.toList()
         ..sort((a, b) => (b.value as num).compareTo(a.value as num));
       dominantTrait = sorted.first.key.toString();
-    } else if (vibes.isNotEmpty) {
-      final Map<String, int> counts = {};
-      for (var v in vibes) {
-        counts[v.toString()] = (counts[v.toString()] ?? 0) + 1;
-      }
-      final sorted = counts.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-      dominantTrait = sorted.first.key;
     }
 
     return """
-You are an expert travel personality AI. Your job is to recommend real-world destinations that are a GENUINE match for this specific traveler's quiz results.
+You are an expert travel personality AI specializing in Egypt Tourism. Your job is to recommend real-world destinations WITHIN EGYPT that are a GENUINE match for this specific traveler's quiz results.
 
 ══ TRAVELER PROFILE ══
-Personality Type: $personality
+Personality Type: $personality (Can be: Explore, Dreamer, Social, Cultural, Thrill)
 Dominant Trait: $dominantTrait
 
 ══ TRAIT SCORES (0–100%) ══
@@ -126,29 +113,30 @@ ${answersBlock.isNotEmpty ? answersBlock.toString() : '  (Not available)'}
 
 ══ YOUR TASKS ══
 
-1. Write a vivid 1–2 sentence personality bio that reflects exactly what their quiz answers reveal about their travel style. Reference specific traits.
+1. Write a vivid 1–2 sentence personality bio that reflects exactly what their quiz answers reveal about their travel style. Reference specific traits and mention why Egypt is perfect for them.
 
-2. Recommend exactly 5 real travel destinations. The recommendations MUST:
+2. Recommend exactly 5 real travel destinations IN EGYPT. The recommendations MUST:
    - Be directly driven by the trait scores and quiz answers above.
-   - Prioritize destinations that match the DOMINANT trait ($dominantTrait).
-   - Include a MIX of destination types (at least one each from the top 2 traits).
-   - Each matchReason MUST reference specific answers or trait scores from above (e.g., "Your 80% Adventure score and choice of 'Extreme Sports' afternoon point directly to Patagonia's raw wilderness").
-   - matchPercentage must vary realistically (highest for dominant trait match, lower for secondary matches). Range: 78–97.
+   - Prioritize destinations that match the personality type ($personality).
+   - Include a MIX of Egyptian destination types (Oases, Red Sea, Nile Cities, Historic Cairo).
+   - Each matchReason MUST reference specific answers or trait scores from above.
+   - matchPercentage must vary realistically. Range: 78–97.
    - bestFor must be a specific 2–4 word activity tag matching what the traveler chose.
 
 ══ STRICT OUTPUT FORMAT ══
-Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with {{ and end with }}.
+Return ONLY valid JSON. No markdown, no code fences, no extra explanation. The response must start with { and end with }.
 
+Example structure:
 {
   "personalityBio": "...",
   "destinations": [
     {
-      "name": "City, Country",
+      "name": "City, Egypt",
       "category": "Nature | Adventure | Culture | City | Luxury",
-      "description": "2–3 sentences. Vivid. Specific.",
+      "description": "2-3 sentences. Vivid. Specific.",
       "matchReason": "Direct reference to their trait scores or quiz answers.",
       "matchPercentage": 95,
-      "bestFor": "Hiking & Wildlife"
+      "bestFor": "Diving & Canyons"
     }
   ]
 }
@@ -166,12 +154,10 @@ Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with 
       final response = await model.generateContent([Content.text(prompt)]);
       final String rawResponse = response.text ?? '{}';
 
-      // Minimum loading feel
       await Future.delayed(const Duration(seconds: 3));
 
       if (!mounted) return;
 
-      // Clean and parse
       final String clean = rawResponse
           .replaceAll('```json', '')
           .replaceAll('```', '')
@@ -180,8 +166,7 @@ Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with 
       Map<String, dynamic> decoded = {};
       try {
         decoded = jsonDecode(clean) as Map<String, dynamic>;
-      } catch (_) {
-        // Try to extract JSON substring if there's surrounding text
+      } catch (e) {
         final match = RegExp(r'\{[\s\S]*\}').firstMatch(clean);
         if (match != null) {
           decoded = jsonDecode(match.group(0)!) as Map<String, dynamic>;
@@ -191,6 +176,7 @@ Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with 
       final List destinations = decoded['destinations'] ?? [];
       final String bio = decoded['personalityBio'] ?? '';
 
+      final String personality = quizData!['personality'] ?? 'Explorer';
       Navigator.pushReplacementNamed(
         context,
         QuizResultsScreen.routeName,
@@ -198,7 +184,7 @@ Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with 
           ...quizData!,
           'ai_results': jsonEncode(destinations.isNotEmpty
               ? destinations
-              : _getFallbackDestinations(quizData!['personality'] ?? 'Explorer')),
+              : _getFallbackDestinations(personality)),
           'personality_bio': bio.isNotEmpty
               ? bio
               : 'Your travel DNA is uniquely crafted based on your preferences.',
@@ -207,7 +193,6 @@ Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with 
       );
     } catch (e) {
       if (!mounted) return;
-      // Fall back gracefully — still show results with personality-aware fallbacks
       Navigator.pushReplacementNamed(
         context,
         QuizResultsScreen.routeName,
@@ -216,7 +201,7 @@ Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with 
           'ai_results': jsonEncode(
               _getFallbackDestinations(quizData!['personality'] ?? 'Explorer')),
           'personality_bio':
-              'Your travel DNA reveals a unique explorer ready to discover the world.',
+              'Your travel DNA reveals a unique explorer ready to discover the beauty of Egypt.',
           'confidence': 92,
         },
       );
@@ -247,7 +232,6 @@ Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with 
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Animated icon
               ScaleTransition(
                 scale: Tween(begin: 0.95, end: 1.05).animate(
                   CurvedAnimation(
@@ -332,220 +316,141 @@ Return ONLY valid JSON. No markdown, no code fences, no explanation. Start with 
     );
   }
 
-  // Personality-aware fallbacks so the screen is never empty
   List<Map<String, dynamic>> _getFallbackDestinations(String personality) {
+    debugPrint('🗺️ Using Egyptian fallback for personality: "$personality"');
     final Map<String, List<Map<String, dynamic>>> fallbacks = {
       'Thrill Chaser': [
         {
-          'name': 'Queenstown, New Zealand',
+          'name': 'Dahab, Egypt',
           'category': 'Adventure',
-          'description':
-              'The adventure capital of the world, packed with bungee jumping, skydiving, and white-water rafting against a stunning alpine backdrop.',
-          'matchReason':
-              'Your high Adventure score and preference for extreme activities make Queenstown your natural habitat.',
+          'description': 'The ultimate hub for diving, windsurfing, and mountain trekking. Home to the world-famous Blue Hole.',
+          'matchReason': 'Your desire for extreme activities and high adventure energy perfectly matches Dahab\'s rugged vibe.',
           'matchPercentage': 96,
-          'bestFor': 'Extreme Sports',
+          'bestFor': 'Diving & Extreme Sports',
         },
         {
-          'name': 'Patagonia, Argentina',
+          'name': 'Ras Mohammed, Egypt',
           'category': 'Adventure',
-          'description':
-              'Dramatic glaciers, jagged peaks, and raw Andean wilderness at the southernmost tip of the world.',
-          'matchReason':
-              'Thrill Chasers thrive in Patagonia\'s unforgiving terrain and endless hiking trails.',
+          'description': 'A world-renowned marine national park with some of the most vibrant coral reefs and diverse marine life on the planet.',
+          'matchReason': 'Thrill seekers thrive in the deep, clear waters of the Red Sea.',
           'matchPercentage': 91,
-          'bestFor': 'Trekking & Glaciers',
+          'bestFor': 'Deep Sea Diving',
         },
         {
-          'name': 'Moab, Utah, USA',
+          'name': 'Wadi El Hitan, Fayoum',
           'category': 'Adventure',
-          'description':
-              'Red rock canyons and world-class mountain biking, climbing, and off-road trails baked in desert sun.',
-          'matchReason':
-              'Your active travel style aligns perfectly with Moab\'s non-stop outdoor action.',
+          'description': 'Prehistoric whale fossils meet majestic desert dunes. Ideal for sandboarding and stargazing.',
+          'matchReason': 'Your active travel style aligns with off-road exploration and desert thrills.',
           'matchPercentage': 87,
-          'bestFor': 'Mountain Biking & Climbing',
-        },
-        {
-          'name': 'Iceland',
-          'category': 'Nature',
-          'description':
-              'Volcanoes, waterfalls, geysers, and the Northern Lights — Iceland is raw nature at its most dramatic.',
-          'matchReason':
-              'Your love of pushing limits extends naturally to Iceland\'s extreme landscapes.',
-          'matchPercentage': 84,
-          'bestFor': 'Volcano & Aurora Hiking',
-        },
-        {
-          'name': 'Medellin, Colombia',
-          'category': 'City',
-          'description':
-              'A city reborn, with vibrant nightlife, paragliding over green valleys, and a pulsing local energy.',
-          'matchReason':
-              'Medellin\'s mix of urban buzz and outdoor thrills suits your spontaneous, high-energy nature.',
-          'matchPercentage': 80,
-          'bestFor': 'Paragliding & Nightlife',
+          'bestFor': 'Desert Safaris',
         },
       ],
       'Explorer': [
         {
-          'name': 'Kyoto, Japan',
-          'category': 'Culture',
-          'description':
-              'Ancient temples, zen gardens, and centuries of tradition layered into every street and shrine.',
-          'matchReason':
-              'Your Nature affinity and love of quiet, meaningful places make Kyoto an ideal match.',
+          'name': 'Siwa Oasis, Egypt',
+          'category': 'Nature',
+          'description': 'A mystical oasis with salt lakes, Cleopatra\'s spring, and an ancient mud-brick fortress.',
+          'matchReason': 'Explorers with high Nature scores find their deepest peace in Siwa\'s unique and remote landscape.',
           'matchPercentage': 94,
-          'bestFor': 'Temple Trails & Gardens',
+          'bestFor': 'Eco-tourism & Wellness',
         },
         {
-          'name': 'Norwegian Fjords, Norway',
+          'name': 'The White Desert, Egypt',
           'category': 'Nature',
-          'description':
-              'Towering cliffs, mirror-still water, and villages perched impossibly above the sea.',
-          'matchReason':
-              'Explorers with high Nature scores find their deepest peace in the Norwegian wilderness.',
+          'description': 'Surreal chalk rock formations that look like an alien world. The ultimate camping experience.',
+          'matchReason': 'Your independent explorer spirit thrives in the silent solitude of the Western Desert.',
           'matchPercentage': 90,
-          'bestFor': 'Kayaking & Scenic Hiking',
+          'bestFor': 'Wilderness Camping',
         },
         {
-          'name': 'Patagonia, Chile',
+          'name': 'Nuweiba, Egypt',
           'category': 'Nature',
-          'description':
-              'Torres del Paine\'s glaciers and guanacos roaming open steppe — one of earth\'s last wild places.',
-          'matchReason':
-              'Your independent explorer spirit thrives in Patagonia\'s off-the-grid solitude.',
-          'matchPercentage': 88,
-          'bestFor': 'Wilderness Trekking',
-        },
-        {
-          'name': 'Luang Prabang, Laos',
-          'category': 'Culture',
-          'description':
-              'A UNESCO-listed town where golden temples, monks at dawn, and the Mekong create a timeless calm.',
-          'matchReason':
-              'Hidden gems like Luang Prabang are exactly what curious Explorers seek.',
-          'matchPercentage': 85,
-          'bestFor': 'Cultural Immersion',
-        },
-        {
-          'name': 'Azores, Portugal',
-          'category': 'Nature',
-          'description':
-              'Volcanic islands in the mid-Atlantic with crater lakes, whale watching, and almost no crowds.',
-          'matchReason':
-              'Your preference for quiet, less-traveled places is perfectly answered by the Azores.',
-          'matchPercentage': 82,
-          'bestFor': 'Island Exploration',
+          'description': 'Where the mountains meet the sea. Simple camps, star-filled nights, and pure tranquility.',
+          'matchReason': 'Your preference for quiet, less-traveled places is perfectly answered by Nuweiba\'s beach camps.',
+          'matchPercentage': 86,
+          'bestFor': 'Slow & Chill Travel',
         },
       ],
       'Social Butterfly': [
         {
-          'name': 'Barcelona, Spain',
+          'name': 'Zamalek, Cairo',
           'category': 'City',
-          'description':
-              'Beachfront boulevards, world-class tapas bars, and a nightlife that doesn\'t start until midnight.',
-          'matchReason':
-              'Your high Social score and love of meeting new people are tailor-made for Barcelona\'s open culture.',
+          'description': 'The cosmopolitan heart of Cairo. Filled with trendy cafes, art galleries, and vibrant social spots.',
+          'matchReason': 'Your high Social score and love of meeting people are tailor-made for Zamalek\'s lively streets.',
           'matchPercentage': 95,
-          'bestFor': 'Tapas & Beach Parties',
+          'bestFor': 'Coffee & Socializing',
         },
         {
-          'name': 'Rio de Janeiro, Brazil',
+          'name': 'El Gouna, Egypt',
           'category': 'City',
-          'description':
-              'Carnival energy year-round, iconic beaches, samba in the streets, and a warmth that is contagious.',
-          'matchReason':
-              'Social Butterflies thrive in Rio\'s infectious, communal celebration of life.',
+          'description': 'A vibrant community on the Red Sea with amazing beach clubs, kitesurfing, and social events.',
+          'matchReason': 'Social personalities thrive in El Gouna\'s upscale, international social scene.',
           'matchPercentage': 91,
-          'bestFor': 'Samba & Beach Festivals',
+          'bestFor': 'Beach Parties & Sports',
         },
         {
-          'name': 'Amsterdam, Netherlands',
+          'name': 'Alexandria, Egypt',
           'category': 'City',
-          'description':
-              'Canal-side cafés, world-class museums, vibrant markets, and one of Europe\'s most welcoming cities.',
-          'matchReason':
-              'Your spontaneous city nature finds endless social opportunities in Amsterdam\'s open culture.',
+          'description': 'The Pearl of the Mediterranean. Historic cafes, seafood, and a classic city energy.',
+          'matchReason': 'Your spontaneous city nature finds endless social opportunities along Alexandria\'s Corniche.',
           'matchPercentage': 87,
-          'bestFor': 'Canal Cycling & Nightlife',
-        },
-        {
-          'name': 'Bali, Indonesia',
-          'category': 'Nature',
-          'description':
-              'A global gathering place for travelers — yoga retreats, beach clubs, and co-working cafés all in one.',
-          'matchReason':
-              'Bali\'s traveler community is perfect for Social Butterflies who want connection with scenery.',
-          'matchPercentage': 83,
-          'bestFor': 'Retreats & Beach Clubs',
-        },
-        {
-          'name': 'Tokyo, Japan',
-          'category': 'City',
-          'description':
-              'A city of infinite neighborhoods, each with its own culture, food scene, and social energy.',
-          'matchReason':
-              'Tokyo\'s urban density and cultural variety feed a Social Butterfly\'s hunger for new experiences.',
-          'matchPercentage': 79,
-          'bestFor': 'Street Food & Nightlife',
+          'bestFor': 'City Walks & Seafood',
         },
       ],
-      'Luxury Seeker': [
+      'Culture': [
         {
-          'name': 'Maldives',
-          'category': 'Luxury',
-          'description':
-              'Overwater bungalows above turquoise lagoons, private butlers, and sunsets that redefine beauty.',
-          'matchReason':
-              'Your Luxury score and preference for Tropical Beach mornings point directly to the Maldives.',
-          'matchPercentage': 97,
-          'bestFor': 'Overwater Villa & Spa',
-        },
-        {
-          'name': 'Amalfi Coast, Italy',
-          'category': 'Luxury',
-          'description':
-              'Dramatic cliffside towns, Michelin-starred restaurants, and private yacht cruises on crystal water.',
-          'matchReason':
-              'Planned luxury travelers find the Amalfi Coast\'s curated elegance irresistible.',
-          'matchPercentage': 93,
-          'bestFor': 'Fine Dining & Yacht Days',
-        },
-        {
-          'name': 'Dubai, UAE',
-          'category': 'Luxury',
-          'description':
-              'Skyscrapers, private beaches, 7-star hotels, and a shopping scene that defies imagination.',
-          'matchReason':
-              'Your Luxury Seeker personality gravitates toward Dubai\'s world-class opulence.',
-          'matchPercentage': 89,
-          'bestFor': 'Ultra-Luxury Stays',
-        },
-        {
-          'name': 'Santorini, Greece',
-          'category': 'Luxury',
-          'description':
-              'Whitewashed infinity pools, volcanic sunsets, and cave suites carved into the caldera.',
-          'matchReason':
-              'Luxury Seekers love Santorini for its intimate, photogenic perfection.',
-          'matchPercentage': 85,
-          'bestFor': 'Sunset Views & Wine',
-        },
-        {
-          'name': 'Kyoto, Japan',
+          'name': 'Luxor, Egypt',
           'category': 'Culture',
-          'description':
-              'Exclusive ryokan experiences, private tea ceremonies, and serene temple mornings.',
-          'matchReason':
-              'Luxury in Kyoto is quiet, refined, and deeply meaningful — perfectly matching your style.',
-          'matchPercentage': 81,
-          'bestFor': 'Ryokan & Private Gardens',
+          'description': 'The world\'s greatest open-air museum. Home to the Valley of the Kings and Karnak Temple.',
+          'matchReason': 'Your high Culture score makes Luxor\'s epic history an essential destination.',
+          'matchPercentage': 98,
+          'bestFor': 'History & Archaeology',
+        },
+        {
+          'name': 'Historic Cairo, Egypt',
+          'category': 'Culture',
+          'description': 'Muizz Street, the Citadel, and Khan el-Khalili. A walk through Islamic Cairo is a walk through time.',
+          'matchReason': 'Culture-driven travelers find Cairo\'s ancient streets and mosques endlessly rewarding.',
+          'matchPercentage': 94,
+          'bestFor': 'Historic Walking Tours',
+        },
+        {
+          'name': 'Aswan, Egypt',
+          'category': 'Culture',
+          'description': 'Explore Nubian culture and the magnificent temples of Abu Simbel and Philae.',
+          'matchReason': 'Matches your appreciation for tradition and deep cultural immersion.',
+          'matchPercentage': 90,
+          'bestFor': 'Ancient Heritage',
+        },
+      ],
+      'Dreamer': [
+        {
+          'name': 'Nuweiba, Egypt',
+          'category': 'Nature',
+          'description': 'Simple camps and breathtaking star-filled nights by the sea. A place where time stands still.',
+          'matchReason': 'Dreamers connect deeply with the peaceful and ethereal atmosphere of Nuweiba\'s coastline.',
+          'matchPercentage': 95,
+          'bestFor': 'Sunset Views & Relaxation',
+        },
+        {
+          'name': 'Aswan at Sunset, Egypt',
+          'category': 'Culture',
+          'description': 'Taking a Felucca on the Nile as the sun sets behind the tombs of the nobles.',
+          'matchReason': 'Your reflective and poetic travel style matches Aswan\'s timeless beauty.',
+          'matchPercentage': 91,
+          'bestFor': 'Nile Reflection',
+        },
+        {
+          'name': 'The White Desert, Egypt',
+          'category': 'Nature',
+          'description': 'The alien chalk formations under a full moon look like a landscape from another planet.',
+          'matchReason': 'Your love for surreal and beautiful landscapes makes this a Dreamer\'s paradise.',
+          'matchPercentage': 88,
+          'bestFor': 'Star Gazing',
         },
       ],
     };
 
-    return fallbacks[personality] ??
-        fallbacks['Explorer']!;
+    return fallbacks[personality] ?? fallbacks['Explorer']!;
   }
 }

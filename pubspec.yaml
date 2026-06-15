@@ -52,6 +52,8 @@ flutter_native_splash:
   android_gravity: center
   ios_content_mode: center
   fullscreen: true
+  branding: "assets/images/splash_branding.jpg"
+  branding_mode: bottom
   android_12:
     image: "assets/images/splash.png.jpg"
     icon_background_color: "#2D3E2D"

@@ -70,7 +70,6 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     if (_commentController.text.trim().isEmpty || user == null) return;
     final String commentText = _commentController.text.trim();
     
-    // جلب بيانات المستخدم الحالية لضمان جودة الكومنت
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
     final userData = userDoc.data();
     final String uName = userData?['name'] ?? currentUserName ?? "Explorer";
@@ -101,7 +100,6 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     final String? receiverId = widget.postData['userId'];
     if (receiverId == null || user == null) return;
 
-    // التأكد من جلب بياناتك الحقيقية
     final String finalName = sName ?? currentUserName ?? user!.displayName ?? "Explorer";
     final String? finalImage = sImage ?? currentUserProfileImg ?? user!.photoURL;
 

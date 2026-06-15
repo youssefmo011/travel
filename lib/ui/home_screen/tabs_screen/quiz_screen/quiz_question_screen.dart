@@ -21,7 +21,7 @@ class QuizQuestion {
 class QuizOption {
   final String title;
   final String image;
-  final String vibe; // 'Nature', 'City', 'Luxury', 'Adventure'
+  final String vibe; // 'Explore', 'Dreamer', 'Social', 'Cultural', 'Thrill'
 
   QuizOption({required this.title, required this.image, required this.vibe});
 }
@@ -46,10 +46,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       highlightWord: 'move?',
       description: 'Choose the pace that fits your travel style.',
       options: [
-        QuizOption(title: 'Fast & Active', image: AppAssets.fastActive, vibe: 'Adventure'),
-        QuizOption(title: 'Slow & Chill', image: AppAssets.onboarding, vibe: 'Nature'),
-        QuizOption(title: 'Spontaneous', image: AppAssets.storyPhoto, vibe: 'City'),
-        QuizOption(title: 'Planned Luxury', image: AppAssets.profilePhoto, vibe: 'Luxury'),
+        QuizOption(title: 'Fast & Active', image: AppAssets.fastActive, vibe: 'Thrill'),
+        QuizOption(title: 'Slow & Chill', image: AppAssets.onboarding, vibe: 'Explore'),
+        QuizOption(title: 'Socializing', image: AppAssets.storyPhoto, vibe: 'Social'),
+        QuizOption(title: 'Artistic Flow', image: AppAssets.profilePhoto, vibe: 'Dreamer'),
       ],
     ),
     QuizQuestion(
@@ -57,10 +57,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       highlightWord: 'morning view?',
       description: 'Choose the landscape that makes your heart feel at peace.',
       options: [
-        QuizOption(title: 'Quiet Forest', image: AppAssets.photoTravel, vibe: 'Nature'),
-        QuizOption(title: 'Busy City Cafe', image: AppAssets.storyPhoto, vibe: 'City'),
-        QuizOption(title: 'Mountain Peak', image: AppAssets.onboarding, vibe: 'Adventure'),
-        QuizOption(title: 'Tropical Beach', image: AppAssets.profilePhoto, vibe: 'Luxury'),
+        QuizOption(title: 'Ancient Ruins', image: AppAssets.luxor, vibe: 'Cultural'),
+        QuizOption(title: 'Busy City Cafe', image: AppAssets.luCaffe, vibe: 'Social'),
+        QuizOption(title: 'Mountain Peak', image: AppAssets.onboarding, vibe: 'Thrill'),
+        QuizOption(title: 'Quiet Oasis', image: AppAssets.siwa, vibe: 'Explore'),
       ],
     ),
     QuizQuestion(
@@ -68,10 +68,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       highlightWord: 'afternoon?',
       description: 'What activity makes you lose track of time?',
       options: [
-        QuizOption(title: 'Museums & Art', image: AppAssets.storyPhoto, vibe: 'City'),
-        QuizOption(title: 'Extreme Sports', image: AppAssets.photoTravel, vibe: 'Adventure'),
-        QuizOption(title: 'Sunbathing', image: AppAssets.profilePhoto, vibe: 'Luxury'),
-        QuizOption(title: 'Forest Hiking', image: AppAssets.onboarding, vibe: 'Nature'),
+        QuizOption(title: 'Museums & Art', image: AppAssets.koffeeCulture, vibe: 'Cultural'),
+        QuizOption(title: 'Extreme Sports', image: AppAssets.dahabBlueHole, vibe: 'Thrill'),
+        QuizOption(title: 'Daydreaming', image: AppAssets.storyPhoto, vibe: 'Dreamer'),
+        QuizOption(title: 'Nature Hiking', image: AppAssets.fayoum, vibe: 'Explore'),
       ],
     ),
     QuizQuestion(
@@ -79,10 +79,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       highlightWord: 'Friday night?',
       description: 'The vibe you seek when the sun goes down.',
       options: [
-        QuizOption(title: 'Street Market', image: AppAssets.storyPhoto, vibe: 'City'),
-        QuizOption(title: 'Cozy Cafe', image: AppAssets.onboarding, vibe: 'Nature'),
-        QuizOption(title: 'Vibrant Club', image: AppAssets.photoTravel, vibe: 'Luxury'),
-        QuizOption(title: 'Sunset Hike', image: AppAssets.photoTravel, vibe: 'Adventure'),
+        QuizOption(title: 'Local Market', image: AppAssets.walkOfCairo, vibe: 'Social'),
+        QuizOption(title: 'Stargazing', image: AppAssets.whiteDesert, vibe: 'Dreamer'),
+        QuizOption(title: 'Vibrant Club', image: AppAssets.gouna, vibe: 'Thrill'),
+        QuizOption(title: 'Nubian Music', image: AppAssets.aswan, vibe: 'Cultural'),
       ],
     ),
     QuizQuestion(
@@ -90,10 +90,10 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       highlightWord: 'dream stay?',
       description: 'Where you rest determines your experience.',
       options: [
-        QuizOption(title: 'Boutique Hotel', image: AppAssets.storyPhoto, vibe: 'City'),
-        QuizOption(title: 'Cozy Cabin', image: AppAssets.onboarding, vibe: 'Nature'),
-        QuizOption(title: 'Luxury Resort', image: AppAssets.profilePhoto, vibe: 'Luxury'),
-        QuizOption(title: 'Camping Tent', image: AppAssets.photoTravel, vibe: 'Adventure'),
+        QuizOption(title: 'Historic House', image: AppAssets.walkOfCairo, vibe: 'Cultural'),
+        QuizOption(title: 'Eco-Lodge', image: AppAssets.siwa, vibe: 'Explore'),
+        QuizOption(title: 'Luxury Resort', image: AppAssets.gouna, vibe: 'Social'),
+        QuizOption(title: 'Desert Tent', image: AppAssets.whiteDesert, vibe: 'Dreamer'),
       ],
     ),
   ];
@@ -106,7 +106,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
       return;
     }
 
-    _selectedVibes.add(_questions[_currentStep].options[_selectedOptionIndex!].vibe);
+    _selectedVibeAdd();
 
     if (_currentStep < _questions.length - 1) {
       setState(() {
@@ -114,46 +114,52 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
         _selectedOptionIndex = null;
       });
     } else {
-      String personality = _calculatePersonality();
-
-      // Build trait scores as percentages from vibe counts
-      Map<String, int> counts = {};
-      for (var v in _selectedVibes) {
-        counts[v] = (counts[v] ?? 0) + 1;
-      }
-      final int total = _selectedVibes.length;
-
-      // Map quiz answers to questions for full context
-      final List<Map<String, String>> answeredQuestions = [];
-      for (int i = 0; i < _questions.length && i < _selectedVibes.length; i++) {
-        answeredQuestions.add({
-          "question": "${_questions[i].question}${_questions[i].highlightWord}",
-          "answer": _questions[i].options
-              .firstWhere((o) => o.vibe == _selectedVibes[i],
-                  orElse: () => _questions[i].options[0])
-              .title,
-          "vibe": _selectedVibes[i],
-        });
-      }
-
-      Navigator.pushNamed(
-        context,
-        QuizAnalysisScreen.routeName,
-        arguments: {
-          "personality": personality,
-          "vibes": _selectedVibes,
-          "traits": {
-            "Nature":   ((counts['Nature']    ?? 0) / total * 100).toInt(),
-            "Adventure":((counts['Adventure'] ?? 0) / total * 100).toInt(),
-            "Culture":  ((counts['City']      ?? 0) / total * 100).toInt(),
-            "Social":   ((counts['City']      ?? 0) / total * 100).toInt(),
-            "Luxury":   ((counts['Luxury']    ?? 0) / total * 100).toInt(),
-          },
-          "answered_questions": answeredQuestions,
-          "confidence": 85 + (_selectedVibes.length % 10),
-        },
-      );
+      _finishQuiz();
     }
+  }
+
+  void _selectedVibeAdd() {
+     _selectedVibes.add(_questions[_currentStep].options[_selectedOptionIndex!].vibe);
+  }
+
+  void _finishQuiz() {
+    String personality = _calculatePersonality();
+
+    Map<String, int> counts = {};
+    for (var v in _selectedVibes) {
+      counts[v] = (counts[v] ?? 0) + 1;
+    }
+    final int total = _selectedVibes.length;
+
+    final List<Map<String, String>> answeredQuestions = [];
+    for (int i = 0; i < _questions.length && i < _selectedVibes.length; i++) {
+      answeredQuestions.add({
+        "question": "${_questions[i].question}${_questions[i].highlightWord}",
+        "answer": _questions[i].options
+            .firstWhere((o) => o.vibe == _selectedVibes[i],
+                orElse: () => _questions[i].options[0])
+            .title,
+        "vibe": _selectedVibes[i],
+      });
+    }
+
+    Navigator.pushNamed(
+      context,
+      QuizAnalysisScreen.routeName,
+      arguments: {
+        "personality": personality,
+        "vibes": _selectedVibes,
+        "traits": {
+          "Explore":  ((counts['Explore']  ?? 0) / total * 100).toInt(),
+          "Thrill":   ((counts['Thrill']   ?? 0) / total * 100).toInt(),
+          "Cultural": ((counts['Cultural'] ?? 0) / total * 100).toInt(),
+          "Social":   ((counts['Social']   ?? 0) / total * 100).toInt(),
+          "Dreamer":  ((counts['Dreamer']  ?? 0) / total * 100).toInt(),
+        },
+        "answered_questions": answeredQuestions,
+        "confidence": 85 + (_selectedVibes.length % 10),
+      },
+    );
   }
 
   String _calculatePersonality() {
@@ -164,15 +170,7 @@ class _QuizQuestionScreenState extends State<QuizQuestionScreen> {
 
     var sorted = counts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    String topVibe = sorted.first.key;
-
-    switch (topVibe) {
-      case 'Adventure': return 'Thrill Chaser';
-      case 'Nature':    return 'Explorer';
-      case 'City':      return 'Social Butterfly';
-      case 'Luxury':    return 'Luxury Seeker';
-      default:          return 'Explorer';
-    }
+    return sorted.first.key;
   }
 
   @override

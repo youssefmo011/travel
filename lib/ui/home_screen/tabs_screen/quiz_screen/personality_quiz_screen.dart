@@ -62,19 +62,20 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
     "Totally disagree"
   ];
 
-  // Answers list to allow reversing scores on back navigation
-  // Each entry is a list of score keys incremented for that question
+
   final List<Map<String, int>> _answerHistory = [];
+  bool _isProcessingAnswer = false;
 
   void _handleAnswer(int index) async {
+    if (_isProcessingAnswer) return;
+    _isProcessingAnswer = true;
+
     setState(() => _selectedOptionIndex = index);
     await Future.delayed(const Duration(milliseconds: 450));
 
-    // value: Totally agree=5 … Totally disagree=1
     final int value = 5 - index;
     final int qIndex = _currentQuestionIndex + 1;
 
-    // Record which scores were incremented and by how much
     final Map<String, int> deltas = {};
 
     void add(String key, int v) {
@@ -89,17 +90,19 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
       deltas[key] = (deltas[key] ?? 0) + v;
     }
 
-    if ([1, 5, 9, 22, 25].contains(qIndex)) add('explorer', value);
-    if ([6, 14, 18, 12].contains(qIndex))   add('dreamer',  value);
-    if ([4, 7, 24, 20, 23].contains(qIndex)) add('social',  value);
-    if ([11, 19, 15, 8].contains(qIndex))   add('cultural', value);
-    if ([3, 13, 16, 21].contains(qIndex))   add('thrill',   value);
-    if ([6, 14, 16].contains(qIndex))       add('nature',   value);
+    if ([1, 5, 9, 22, 25].contains(qIndex)) add('explorer',  value);
+    if ([6, 12, 14, 18].contains(qIndex))   add('dreamer',   value);
+    if ([4, 7, 20, 23, 24].contains(qIndex)) add('social',   value);
+    if ([8, 11, 15, 19].contains(qIndex))   add('cultural',  value);
+    if ([3, 13, 16, 21].contains(qIndex))   add('thrill',    value);
 
     _answerHistory.add(deltas);
 
     if (_currentQuestionIndex < _questions.length - 1) {
-      setState(() => _selectedOptionIndex = null);
+      setState(() {
+        _selectedOptionIndex = null;
+        _isProcessingAnswer = false; 
+      });
       _pageController.nextPage(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut);
@@ -110,29 +113,22 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
 
   void _finishQuiz() async {
     final Map<String, int> scores = {
-      "Bold Explorer":    explorerScore,
-      "Serene Seeker":    dreamerScore,
+      "Explorer":       explorerScore,
+      "Dreamer":        dreamerScore,
       "Social Butterfly": socialScore,
-      "Culture Seeker":   culturalScore,
-      "Thrill Chaser":    thrillScore,
+      "Culture":        culturalScore,
+      "Thrill Chaser":  thrillScore,
     };
+    debugPrint('🧠 Quiz Scores: $scores');
 
     final String finalPersonality =
         scores.entries.reduce((a, b) => a.value > b.value ? a : b).key;
 
-    // Consistent normalization: each score / (questions_for_that_trait * max_value_per_q)
-    // explorer: 5 questions × 5 = 25 max
-    // dreamer:  4 questions × 5 = 20 max
-    // social:   5 questions × 5 = 25 max
-    // cultural: 4 questions × 5 = 20 max
-    // thrill:   4 questions × 5 = 20 max
-    // nature:   3 questions × 5 = 15 max
     final double natureP    = (natureScore   / 15).clamp(0.0, 1.0) * 100;
     final double thrillP    = (thrillScore   / 20).clamp(0.0, 1.0) * 100;
     final double culturalP  = (culturalScore / 20).clamp(0.0, 1.0) * 100;
     final double socialP    = (socialScore   / 25).clamp(0.0, 1.0) * 100;
     final double relaxP     = (dreamerScore  / 20).clamp(0.0, 1.0) * 100;
-
     var box = await Hive.openBox('user_prefs');
     await box.put('personality', finalPersonality);
 
@@ -160,10 +156,9 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
           "Adventure": thrillP.toInt(),
           "Culture":   culturalP.toInt(),
           "Social":    socialP.toInt(),
-          "Relaxation": (dreamerScore * 5).toInt(),
+          "Dreamy":    relaxP.toInt(),
         },
         "raw_scores": scores,
-        // Detailed score breakdown so AI can reason precisely
         "score_detail": {
           "explorerScore":  explorerScore,
           "dreamerScore":   dreamerScore,
@@ -201,7 +196,6 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
                   IconButton(
                     onPressed: () {
                       if (_currentQuestionIndex > 0) {
-                        // Reverse the scores from the previous answer
                         if (_answerHistory.isNotEmpty) {
                           final Map<String, int> last = _answerHistory.removeLast();
                           last.forEach((key, v) {
@@ -215,7 +209,10 @@ class _PersonalityQuizScreenState extends State<PersonalityQuizScreen> {
                             }
                           });
                         }
-                        setState(() => _selectedOptionIndex = null);
+                        setState(() {
+                          _selectedOptionIndex = null;
+                          _isProcessingAnswer = false;
+                        });
                         _pageController.previousPage(
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.easeInOut);

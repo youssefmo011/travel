@@ -119,7 +119,7 @@ class QuizResultsScreen extends StatelessWidget {
         onTap: () => Navigator.pop(context),
         child: Container(
           margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.surface,
             shape: BoxShape.circle,
           ),
@@ -133,7 +133,7 @@ class QuizResultsScreen extends StatelessWidget {
               Navigator.of(context).popUntil((route) => route.isFirst),
           child: Container(
             margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.surface,
               shape: BoxShape.circle,
             ),
@@ -157,7 +157,6 @@ class QuizResultsScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 48),
-                // Avatar with confidence badge
                 Stack(
                   alignment: Alignment.bottomRight,
                   children: [
@@ -167,8 +166,8 @@ class QuizResultsScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.primary.withOpacity(0.4),
-                            AppColors.primary.withOpacity(0.1),
+                            AppColors.primary.withValues(alpha: 0.4),
+                            AppColors.primary.withValues(alpha: 0.1),
                           ],
                         ),
                       ),
@@ -225,7 +224,7 @@ class QuizResultsScreen extends StatelessWidget {
                   child: Text(
                     bio,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textGrey,
                       height: 1.5,
@@ -256,11 +255,11 @@ class QuizResultsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.fingerprint, size: 16, color: AppColors.primary),
-                const SizedBox(width: 8),
-                const Text(
+                Icon(Icons.fingerprint, size: 16, color: AppColors.primary),
+                SizedBox(width: 8),
+                Text(
                   'YOUR TRAVEL DNA',
                   style: TextStyle(
                     fontSize: 10,
@@ -363,7 +362,7 @@ class QuizResultsScreen extends StatelessWidget {
             padding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.12),
+              color: AppColors.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -400,7 +399,7 @@ class QuizResultsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.08),
+            color: AppColors.primary.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 6),
           ),
@@ -409,39 +408,16 @@ class QuizResultsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image with overlays
+          // Image Section
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(28)),
-                child: CachedNetworkImage(
-                  imageUrl:
-                      "https://picsum.photos/seed/${name.hashCode + index}/700/400",
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    height: 200,
-                    color: AppColors.surface,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                          color: AppColors.primary, strokeWidth: 2),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    height: 200,
-                    color: AppColors.surface,
-                    child: const Icon(Icons.image_not_supported,
-                        color: AppColors.textGrey),
-                  ),
-                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                child: _buildPlaceImage(name, index),
               ),
-              // Gradient overlay
               Positioned.fill(
                 child: ClipRRect(
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(28)),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
                   child: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -449,7 +425,7 @@ class QuizResultsScreen extends StatelessWidget {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withOpacity(0.5),
+                          Colors.black.withValues(alpha: 0.5),
                         ],
                         stops: const [0.4, 1.0],
                       ),
@@ -457,178 +433,96 @@ class QuizResultsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              // Match badge
               Positioned(
                 top: 14,
                 right: 14,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.95),
+                    color: Colors.white.withValues(alpha: 0.95),
                     borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 6)
-                    ],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 6)],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.auto_awesome,
-                          size: 11, color: AppColors.primary),
+                      const Icon(Icons.auto_awesome, size: 11, color: AppColors.primary),
                       const SizedBox(width: 4),
-                      Text(
-                        '$matchPct% Match',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      Text('$matchPct% Match', style: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
               ),
-              // Category tag
               Positioned(
                 top: 14,
                 left: 14,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryDark.withOpacity(0.85),
+                    color: AppColors.primaryDark.withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Text(
                     category.toUpperCase(),
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1),
+                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 1),
                   ),
                 ),
               ),
-              // Place name on image
               Positioned(
-                bottom: 14,
-                left: 16,
-                right: 16,
+                bottom: 14, left: 16, right: 16,
                 child: Text(
                   name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                          color: Colors.black54,
-                          blurRadius: 6,
-                          offset: Offset(0, 2))
-                    ],
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold, shadows: [Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 2))]),
                 ),
               ),
             ],
           ),
 
-          // Content section
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Best for tag
                 if (bestFor.isNotEmpty) ...[
                   Row(
                     children: [
-                      const Icon(Icons.place,
-                          size: 13, color: AppColors.textGrey),
+                      const Icon(Icons.place, size: 13, color: AppColors.textGrey),
                       const SizedBox(width: 4),
-                      Text(
-                        'Best for: $bestFor',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textGrey,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      Text('Best for: $bestFor', style: const TextStyle(fontSize: 11, color: AppColors.textGrey, fontWeight: FontWeight.w500)),
                     ],
                   ),
                   const SizedBox(height: 10),
                 ],
-                // Description
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: AppColors.textGrey,
-                    fontSize: 13,
-                    height: 1.5,
-                  ),
-                ),
+                Text(description, style: const TextStyle(color: AppColors.textGrey, fontSize: 13, height: 1.5)),
                 const SizedBox(height: 14),
-                // Divider
-                Divider(color: AppColors.surface, thickness: 1.5),
+                const Divider(color: AppColors.surface, thickness: 1.5),
                 const SizedBox(height: 10),
-                // Match reason
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.07),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+                  decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.07), borderRadius: BorderRadius.circular(14)),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.auto_awesome,
-                          size: 14, color: AppColors.primary),
+                      const Icon(Icons.auto_awesome, size: 14, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
-                          matchReason,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: AppColors.primary,
-                            fontStyle: FontStyle.italic,
-                            height: 1.4,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        child: Text(matchReason, style: const TextStyle(fontSize: 12, color: AppColors.primary, fontStyle: FontStyle.italic, height: 1.4, fontWeight: FontWeight.w500)),
                       ),
                     ],
                   ),
                 ),
-                // Match progress bar
                 const SizedBox(height: 14),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('DNA Match',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textGrey,
-                            fontWeight: FontWeight.w600)),
-                    Text('$matchPct%',
-                        style: const TextStyle(
-                            fontSize: 11,
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.bold)),
+                    const Text('DNA Match', style: TextStyle(fontSize: 11, color: AppColors.textGrey, fontWeight: FontWeight.w600)),
+                    Text('$matchPct%', style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 6),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: matchPct / 100.0,
-                    minHeight: 5,
-                    backgroundColor: AppColors.surface,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.primary),
-                  ),
+                  child: LinearProgressIndicator(value: matchPct / 100.0, minHeight: 5, backgroundColor: AppColors.surface, valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary)),
                 ),
               ],
             ),
@@ -649,57 +543,22 @@ class QuizResultsScreen extends StatelessWidget {
         height: 60,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
-          gradient: const LinearGradient(
-            colors: [Color(0xFFD4E8A0), Color(0xFFA8E6C4)],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          gradient: const LinearGradient(colors: [Color(0xFFD4E8A0), Color(0xFFA8E6C4)]),
+          boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.2), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: ElevatedButton(
           onPressed: () {
-            Navigator.pushNamed(
-              context,
-              QuizShuffleScreen.routeName,
-              arguments: {"personality": personality, "traits": traits},
-            );
+            Navigator.pushNamed(context, QuizShuffleScreen.routeName, arguments: {"personality": personality, "traits": traits});
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30)),
-          ),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30))),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.shuffle_rounded,
-                  color: AppColors.primaryDark, size: 20),
+              const Icon(Icons.shuffle_rounded, color: AppColors.primaryDark, size: 20),
               const SizedBox(width: 10),
-              const Text(
-                'SHUFFLE',
-                style: TextStyle(
-                    color: AppColors.primaryDark,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 14,
-                    letterSpacing: 1),
-              ),
+              const Text('SHUFFLE', style: TextStyle(color: AppColors.primaryDark, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1)),
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '– Try Something Unexpected',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600),
-                ),
-              ),
+              Expanded(child: Text('– Try Something Unexpected', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w600))),
             ],
           ),
         ),
@@ -707,40 +566,86 @@ class QuizResultsScreen extends StatelessWidget {
     );
   }
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────────
+  // ─── Image Helper ────────────────────────────────────────────────────────────
+
+  Widget _buildPlaceImage(String name, int index) {
+    final lower = name.toLowerCase();
+    
+    // الأولوية للصور المحلية من الـ Assets
+    if (lower.contains('dahab')) {
+      return Image.asset(AppAssets.dahabBlueHole, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('siwa')) {
+      return Image.asset(AppAssets.siwa, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('luxor')) {
+      return Image.asset(AppAssets.luxor, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('aswan')) {
+      return Image.asset(AppAssets.aswan, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('white desert')) {
+      return Image.asset(AppAssets.whiteDesert, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('gouna')) {
+      return Image.asset(AppAssets.gouna, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('alexandria') || lower.contains('alex')) {
+      return Image.asset(AppAssets.alex, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('fayoum') || lower.contains('hitan')) {
+      return Image.asset(AppAssets.fayoum, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('zamalek')) {
+      return Image.asset(AppAssets.zamalek, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('maadi')) {
+      return Image.asset(AppAssets.maadi, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('cairo')) {
+      return Image.asset(AppAssets.walkOfCairo, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+    if (lower.contains('cafe') || lower.contains('culture') || lower.contains('koffee')) {
+      return Image.asset(AppAssets.koffeeCulture, height: 200, width: double.infinity, fit: BoxFit.cover);
+    }
+
+    // fallback stable network image
+    final int seedId = (name.length + index + 100).abs();
+    return CachedNetworkImage(
+      imageUrl: "https://picsum.photos/seed/$seedId/700/400",
+      height: 200,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Container(
+        height: 200, color: AppColors.surface,
+        child: const Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+      ),
+      errorWidget: (context, url, error) => Image.asset(AppAssets.photoTravel, height: 200, width: double.infinity, fit: BoxFit.cover),
+    );
+  }
 
   List<Map<String, dynamic>> _getFallbackSuggestions(String personality) {
-    return [
-      {
-        "name": "Kyoto, Japan",
-        "category": "Culture",
-        "description":
-            "Ancient temples, zen gardens, and timeless traditions await in Japan's cultural heart. A journey through Kyoto feels like stepping back in time.",
-        "matchReason":
-            "Your $personality personality is drawn to rich cultural experiences and serene environments.",
-        "matchPercentage": 92,
-        "bestFor": "Cultural Exploration"
-      },
-      {
-        "name": "Bali, Indonesia",
-        "category": "Nature",
-        "description":
-            "Lush rice terraces, sacred temples, and warm tropical waters make Bali one of the world's most beloved islands. The spiritual energy here is undeniable.",
-        "matchReason":
-            "Bali's balance of nature and culture perfectly mirrors your travel DNA.",
-        "matchPercentage": 88,
-        "bestFor": "Wellness & Adventure"
-      },
-      {
-        "name": "Patagonia, Argentina",
-        "category": "Adventure",
-        "description":
-            "Dramatic peaks, glaciers, and untouched wilderness at the edge of the earth. Patagonia rewards those who seek raw, unfiltered nature.",
-        "matchReason":
-            "Your adventurous streak thrives in places that challenge and inspire in equal measure.",
-        "matchPercentage": 85,
-        "bestFor": "Hiking & Wildlife"
-      },
-    ];
+    if (personality == "Thrill Chaser") {
+      return [
+        {"name": "Dahab, Egypt", "category": "Adventure", "description": "The 'Blue Hole' awaits. Dahab is the ultimate hub for deep-sea diving and mountain trekking.", "matchReason": "Your adventurous spirit matches Dahab's world-class diving spots.", "matchPercentage": 96, "bestFor": "Diving & Canyons"},
+        {"name": "Wadi El Hitan", "category": "Adventure", "description": "Explore prehistoric whale fossils in this UNESCO World Heritage desert site.", "matchReason": "A perfect mix of off-road exploration and unique desert activities.", "matchPercentage": 89, "bestFor": "Desert Safaris"}
+      ];
+    } else if (personality == "Explorer" || personality.contains("Nature")) {
+      return [
+        {"name": "Siwa Oasis, Egypt", "category": "Nature", "description": "Bathe in Cleopatra's Spring and witness the surreal beauty of the Salt Lakes.", "matchReason": "You seek hidden gems. Siwa is Egypt's most mystical escape.", "matchPercentage": 94, "bestFor": "Eco-tourism"},
+        {"name": "The White Desert", "category": "Nature", "description": "Alien-like chalk rock formations that look like a snowy landscape in the desert.", "matchReason": "Your love for unique landscapes makes this a must-see.", "matchPercentage": 91, "bestFor": "Camping"}
+      ];
+    } else if (personality == "Culture" || personality.contains("Culture")) {
+      return [
+        {"name": "Luxor, Egypt", "category": "Culture", "description": "The world's greatest open-air museum. From the Valley of the Kings to Karnak Temple.", "matchReason": "Your fascination with history will be fully satisfied in ancient Thebes.", "matchPercentage": 98, "bestFor": "Archaeology"},
+        {"name": "Aswan, Egypt", "category": "Culture", "description": "Take a felucca around Elephantine Island and visit the stunning Philae Temple.", "matchReason": "The calm Nubian culture matches your appreciation for tradition.", "matchPercentage": 93, "bestFor": "Nile Cruises"}
+      ];
+    } else {
+      return [
+        {"name": "Zamalek, Cairo", "category": "Social", "description": "The heartbeat of Cairo's art scene. Trendy cafes and vibrant nightlife.", "matchReason": "Your social personality will thrive in the cosmopolitan atmosphere of Zamalek.", "matchPercentage": 90, "bestFor": "Art & Nightlife"},
+        {"name": "Maadi, Cairo", "category": "Social", "description": "Leafy streets, international dining, and a relaxed community vibe in the heart of the city.", "matchReason": "Maadi's cosmopolitan and friendly environment is perfect for your social vibe.", "matchPercentage": 88, "bestFor": "Social Dining"},
+        {"name": "Alexandria, Egypt", "category": "City", "description": "The Pearl of the Mediterranean. Walk the Corniche and enjoy the best seafood.", "matchReason": "A perfect blend of city energy and relaxed coastal life.", "matchPercentage": 87, "bestFor": "Seafood & Social Walks"}
+      ];
+    }
   }
 }

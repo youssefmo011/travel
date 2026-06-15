@@ -220,7 +220,6 @@ class GamifiedProfileScreen extends StatelessWidget {
   }
 
   Widget _buildBadgesSection(List<dynamic> badges) {
-    // Badge icon mapping — matches what the AI returns in badge_icon field
     const Map<String, IconData> iconMap = {
       'psychology':            Icons.psychology,
       'emoji_events':          Icons.emoji_events,
