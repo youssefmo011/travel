@@ -53,7 +53,7 @@ class MapPlanScreen extends StatelessWidget {
                         color: const Color(0xFF71886B),
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10)
+                          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)
                         ],
                       ),
                       child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 16),
@@ -110,7 +110,7 @@ class MapPlanScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFD4D6C8),
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF71886B).withValues(alpha: 0.5), width: 1),
+              border: Border.all(color: const Color(0xFF71886B).withOpacity(0.5), width: 1),
             ),
             child: Icon(icon, color: const Color(0xFF4A5A44), size: 22),
           ),
@@ -119,7 +119,7 @@ class MapPlanScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.7),
+              color: Colors.white.withOpacity(0.7),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -151,7 +151,7 @@ class ProfessionalMapPainter extends CustomPainter {
 
     // 2. رسم تقسيمات "البلوكات" داخل المنطقة الخضراء (City Grid)
     final gridPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3)
+      ..color = Colors.white.withOpacity(0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -226,7 +226,7 @@ class TravelPathPainter extends CustomPainter {
     for (var node in nodes) {
       canvas.drawCircle(node, 3.5, dotPaint);
       // رسم حلقة فاتحة حول النقطة
-      canvas.drawCircle(node, 6, Paint()..color = Colors.white.withValues(alpha: 0.5)..style = PaintingStyle.stroke..strokeWidth = 1);
+      canvas.drawCircle(node, 6, Paint()..color = Colors.white.withOpacity(0.5)..style = PaintingStyle.stroke..strokeWidth = 1);
     }
   }
 

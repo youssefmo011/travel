@@ -112,7 +112,7 @@ class AdventureSummaryScreen extends StatelessWidget {
           const SizedBox(height: 5),
           Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.8), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.8), borderRadius: BorderRadius.circular(10)),
               child: Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))
           ),
         ],

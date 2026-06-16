@@ -66,7 +66,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
           'location': _locationController.text.trim().isEmpty ? "Global" : _locationController.text.trim(),
           'imageUrl': imageUrl,
           'vibe': _selectedVibe,
-          'likes': [], // تم التغيير إلى قائمة فارغة لتخزين الـ UIDs
+          'likes': [], 
           'timestamp': FieldValue.serverTimestamp(),
         });
 
@@ -130,7 +130,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
                 ),
                 child: _selectedImage != null
                     ? ClipRRect(
@@ -160,7 +160,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+                border: Border.all(color: Colors.grey.withOpacity(0.1)),
               ),
               child: Column(
                 children: [
@@ -204,7 +204,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                       backgroundColor: Colors.white,
                       selectedColor: const Color(0xFFC4D4A4),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      side: BorderSide(color: isSelected ? Colors.transparent : Colors.grey.withValues(alpha: 0.2)),
+                      side: BorderSide(color: isSelected ? Colors.transparent : Colors.grey.withOpacity(0.2)),
                     ),
                   );
                 }).toList(),

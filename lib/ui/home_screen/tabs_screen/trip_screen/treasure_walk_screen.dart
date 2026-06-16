@@ -16,7 +16,7 @@ class _TreasureWalkScreenState extends State<TreasureWalkScreen> {
 
   final List<Map<String, String>> stepsData = [
     {"title": "Walk of Cairo", "image": "assets/images/walk of cairo.jpg", "desc": "Find the entrance to start your journey."},
-    {"title": "Coffee Culture", "image": "assets/images/koffee culture.jpg", "desc": "Locate the coffee shop to unlock the next clue."},
+    {"title": "koffee kulture", "image": "assets/images/coffee culture.jpg", "desc": "Locate the coffee shop to unlock the next clue."},
     {"title": "Lu Caffe", "image": "assets/images/lu caffe.jpg", "desc": "The final destination is waiting for you!"},
   ];
 
@@ -79,7 +79,7 @@ class _TreasureWalkScreenState extends State<TreasureWalkScreen> {
       top: 0, left: 0, right: 0, height: MediaQuery.of(context).size.height * 0.45,
       child: Container(
         decoration: const BoxDecoration(image: DecorationImage(image: AssetImage("assets/images/map plan 1.jpg"), fit: BoxFit.cover)),
-        child: Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [const Color(0xFF769372).withValues(alpha: 0.4), Colors.transparent, const Color(0xFFF5F5F5)]))),
+        child: Container(decoration: BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [const Color(0xFF769372).withOpacity(0.4), Colors.transparent, const Color(0xFFF5F5F5)]))),
       ),
     );
   }
@@ -149,7 +149,7 @@ class _TreasureWalkScreenState extends State<TreasureWalkScreen> {
           return Container(
             margin: const EdgeInsets.only(bottom: 15),
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(color: isLocked ? Colors.grey[50] : Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFF769372).withValues(alpha: 0.1))),
+            decoration: BoxDecoration(color: isLocked ? Colors.grey[50] : Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: const Color(0xFF769372).withOpacity(0.1))),
             child: Row(
               children: [
                 Text("STEP $stepNum - ${stepsData[index]['title']}", style: TextStyle(fontWeight: FontWeight.bold, color: isLocked ? Colors.grey : Colors.black, decoration: isCompleted ? TextDecoration.lineThrough : null)),

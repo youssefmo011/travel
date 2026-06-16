@@ -157,7 +157,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               IconButton(
                 icon: Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: const Color(0xFF6D8B6D).withValues(alpha: 0.1), shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: const Color(0xFF6D8B6D).withOpacity(0.1), shape: BoxShape.circle),
                   child: const Icon(Icons.chat_bubble_outline, color: Color(0xFF6D8B6D), size: 20),
                 ),
                 onPressed: () => Navigator.pushNamed(context, ChatScreen.routeName),
@@ -189,7 +189,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 5))],
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 5))],
               ),
               child: const Row(
                 children: [
@@ -206,7 +206,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(15),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10)],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)],
             ),
             child: const Icon(Icons.tune, color: Color(0xFF6D8B6D)),
           )
@@ -303,7 +303,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               top: 15, right: 15,
               child: Container(
                 padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: Colors.black.withOpacity(0.1), shape: BoxShape.circle),
                 child: const Icon(Icons.favorite_border, color: Colors.white, size: 16),
               ),
             ),
@@ -317,9 +317,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -337,7 +337,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
+                          decoration: BoxDecoration(color: Colors.black.withOpacity(0.2), borderRadius: BorderRadius.circular(10)),
                           child: Text(place['category'], style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
                         ),
                       ],

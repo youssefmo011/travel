@@ -70,7 +70,6 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     if (_commentController.text.trim().isEmpty || user == null) return;
     final String commentText = _commentController.text.trim();
     
-    // جلب بيانات المستخدم الحالية لضمان جودة الكومنت
     final userDoc = await FirebaseFirestore.instance.collection('users').doc(user!.uid).get();
     final userData = userDoc.data();
     final String uName = userData?['name'] ?? currentUserName ?? "Explorer";
@@ -101,7 +100,6 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     final String? receiverId = widget.postData['userId'];
     if (receiverId == null || user == null) return;
 
-    // التأكد من جلب بياناتك الحقيقية
     final String finalName = sName ?? currentUserName ?? user!.displayName ?? "Explorer";
     final String? finalImage = sImage ?? currentUserProfileImg ?? user!.photoURL;
 
@@ -140,7 +138,7 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                 Positioned(
                   top: 50, left: 20,
                   child: IconButton(
-                    icon: CircleAvatar(backgroundColor: Colors.black.withValues(alpha: 0.3), child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20)),
+                    icon: CircleAvatar(backgroundColor: Colors.black.withOpacity(0.3), child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20)),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -148,7 +146,7 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
                   top: 50, right: 20,
                   child: IconButton(
                     icon: CircleAvatar(
-                      backgroundColor: Colors.black.withValues(alpha: 0.3),
+                      backgroundColor: Colors.black.withOpacity(0.3),
                       child: Icon(isLiked ? Icons.favorite : Icons.favorite_border, color: isLiked ? Colors.red : Colors.white, size: 22),
                     ),
                     onPressed: _toggleLike,

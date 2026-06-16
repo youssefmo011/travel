@@ -25,6 +25,7 @@ dependencies:
   hive_flutter: ^1.1.0
   google_generative_ai: ^0.4.0
   flutter_native_splash: ^2.4.7
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

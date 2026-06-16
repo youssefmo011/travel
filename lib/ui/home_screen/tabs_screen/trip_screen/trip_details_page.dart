@@ -43,7 +43,7 @@ class TripDetailsPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF769372).withValues(alpha: 0.1),
+                          color: const Color(0xFF769372).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Text(trip.mood, style: const TextStyle(color: Color(0xFF769372), fontWeight: FontWeight.bold)),

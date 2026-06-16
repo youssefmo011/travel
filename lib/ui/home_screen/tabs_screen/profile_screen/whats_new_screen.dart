@@ -78,7 +78,6 @@ class _WhatsNewScreenState extends State<WhatsNewScreen> {
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        // شلنا الـ orderBy مؤقتاً عشان الصفحة متجيبش Error لحد ما تضغط على اللينك وتعمل الـ Index
         stream: FirebaseFirestore.instance
             .collection('notifications')
             .where('receiverId', isEqualTo: user?.uid)
@@ -90,7 +89,6 @@ class _WhatsNewScreenState extends State<WhatsNewScreen> {
 
           var notifications = snapshot.data?.docs ?? [];
           
-          // ترتيب يدوي في الكود (عشان نهرب من ايرور الـ Index)
           notifications.sort((a, b) {
             Timestamp? tA = (a.data() as Map<String, dynamic>)['timestamp'];
             Timestamp? tB = (b.data() as Map<String, dynamic>)['timestamp'];
@@ -138,7 +136,11 @@ class _WhatsNewScreenState extends State<WhatsNewScreen> {
           const SizedBox(height: 100),
           Container(
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: Colors.grey.withValues(alpha: 0.1))),
+            decoration: BoxDecoration(
+              color: Colors.white, 
+              shape: BoxShape.circle, 
+              border: Border.all(color: Colors.grey.withOpacity(0.1)),
+            ),
             child: const Icon(Icons.notifications_none, color: Colors.grey, size: 40),
           ),
           const SizedBox(height: 20),
@@ -162,7 +164,7 @@ class _WhatsNewScreenState extends State<WhatsNewScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF1F4EE),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
+        border: Border.all(color: Colors.grey.withOpacity(0.05)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +205,7 @@ class _WhatsNewScreenState extends State<WhatsNewScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.05)),
+        border: Border.all(color: Colors.grey.withOpacity(0.05)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

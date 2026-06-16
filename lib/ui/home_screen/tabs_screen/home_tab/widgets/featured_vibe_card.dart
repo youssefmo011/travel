@@ -106,7 +106,7 @@ class _FeaturedVibeCardState extends State<FeaturedVibeCard> {
               builder: (context, value, child) {
                 return Transform.scale(
                   scale: value,
-                  child: Icon(Icons.favorite, color: themeGreen.withValues(alpha: 0.9), size: 100),
+                  child: Icon(Icons.favorite, color: themeGreen.withOpacity(0.9), size: 100),
                 );
               },
             ),
@@ -118,7 +118,7 @@ class _FeaturedVibeCardState extends State<FeaturedVibeCard> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.2),
+                color: Colors.black.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.more_horiz, color: Colors.white, size: 20),
@@ -137,9 +137,9 @@ class _FeaturedVibeCardState extends State<FeaturedVibeCard> {
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
+                    color: Colors.white.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                    border: Border.all(color: Colors.white.withOpacity(0.1)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +179,7 @@ class _FeaturedVibeCardState extends State<FeaturedVibeCard> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.2),
+                              color: Colors.black.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(15),
                             ),
                             child: const Text('Wild', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),

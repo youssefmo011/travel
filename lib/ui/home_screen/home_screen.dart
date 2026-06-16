@@ -6,7 +6,6 @@ import 'tabs_screen/home_tab/home_tab.dart';
 import 'tabs_screen/quiz_screen/quiz_screen.dart';
 import 'tabs_screen/trip_screen/trip_screen.dart';
 import 'tabs_screen/profile_screen/gamified_profile_screen.dart';
-import 'tabs_screen/home_tab/widgets/add_post_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const String routeName = 'home';
@@ -40,7 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBody: true,
       body: Stack(
         children: [
-          tabs[selectedIndex >= tabs.length ? 0 : selectedIndex],
+          IndexedStack(
+            index: selectedIndex,
+            children: tabs,
+          ),
           _buildFloatingBottomNavBar(),
         ],
       ),
@@ -52,12 +54,16 @@ class _HomeScreenState extends State<HomeScreen> {
       alignment: Alignment.bottomCenter,
       child: Container(
         margin: const EdgeInsets.only(bottom: 25, left: 15, right: 15),
-        height: 75,
+        height: 70,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 10)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
           ],
         ),
         child: Row(
@@ -65,10 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildNavItem(AppAssets.homeIcon, 'Home', 0),
             _buildNavItem(AppAssets.exploreIcon, 'Explore', 1),
-            // التعديل هنا: يظهر زر "post" فقط عند الدخول للبروفايل، وفي باقي الأوقات يظهر زر "Trip"
-            selectedIndex == 4 
-                ? _buildNavItem(AppAssets.addIcon2, 'post', -1) 
-                : _buildNavItem(AppAssets.tripIcon, 'Trip', 2),
+            _buildNavItem(AppAssets.tripIcon, 'Trip', 2),
             _buildNavItem(AppAssets.quizIcon, 'Quiz', 3),
             _buildNavItem(AppAssets.profileIcon, 'Profile', 4),
           ],
@@ -78,31 +81,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNavItem(String icon, String label, int index) {
-    // إذا كان الإندكس -1 فهذا يعني أنه زر أكشن (Post) وليس تابة
-    bool isSelected = index != -1 && selectedIndex == index;
-    Color color = isSelected ? const Color(0xFF6D8B6D) : const Color(0xFF555555);
+    bool isSelected = selectedIndex == index;
+    Color color = isSelected ? const Color(0xFF6D8B6D) : const Color(0xFF9E9E9E);
 
     return GestureDetector(
-      onTap: () {
-        if (index == -1) {
-          // فتح شاشة إضافة البوست
-          Navigator.pushNamed(context, AddPostScreen.routeName);
-        } else {
-          _onTabChanged(index);
-        }
-      },
+      onTap: () => _onTabChanged(index),
+      behavior: HitTestBehavior.opaque,
       child: Container(
-        color: Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             SvgPicture.asset(
               icon,
               colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-              height: 24,
+              height: 22,
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(

@@ -10,6 +10,7 @@ import 'package:untitled1/ui/home_screen/tabs_screen/chat_screen/chat_screen.dar
 import 'package:untitled1/ui/home_screen/tabs_screen/profile_screen/profile_screen.dart';
 import 'widgets/featured_vibe_card.dart';
 import 'widgets/story_view_screen.dart';
+import 'widgets/add_post_screen.dart';
 
 class HomeTab extends StatefulWidget {
   final Function(int)? onTabChanged;
@@ -130,7 +131,7 @@ class _CustomAppBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildIconBtn(Icons.camera_alt_outlined),
+          _buildIconBtn(Icons.camera_alt_outlined, onTap: () => Navigator.pushNamed(context, AddPostScreen.routeName)),
           Row(
             children: [
               _buildIconBtn(Icons.chat_bubble_outline, onTap: () => Navigator.pushNamed(context, ChatScreen.routeName)),

@@ -9,7 +9,6 @@ class PlaceDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // استقبال البيانات المرسلة من الصفحة السابقة
     final dynamic args = ModalRoute.of(context)!.settings.arguments;
     final Map<String, dynamic> place = args is Map<String, dynamic> ? args : {
       'name': "The Emerald Valley Sanctuary",
@@ -21,7 +20,6 @@ class PlaceDetailsScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // 1. الصورة العلوية الكبيرة
           Positioned(
             top: 0,
             left: 0,
@@ -32,8 +30,6 @@ class PlaceDetailsScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-
-          // 2. أزرار الرجوع والمفضلة (بتأثير زجاجي)
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -54,8 +50,6 @@ class PlaceDetailsScreen extends StatelessWidget {
               ),
             ),
           ),
-
-          // 3. كارت التفاصيل (Sheet)
           DraggableScrollableSheet(
             initialChildSize: 0.65,
             minChildSize: 0.65,
@@ -73,7 +67,6 @@ class PlaceDetailsScreen extends StatelessWidget {
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(24, 30, 24, 120),
                   children: [
-                    // العنوان والتقييم
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +98,6 @@ class PlaceDetailsScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    // الموقع
                     Row(
                       children: [
                         Icon(Icons.location_on, size: 16, color: Colors.grey.shade400),
@@ -117,7 +109,6 @@ class PlaceDetailsScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 25),
-                    // الكلمات الدلالية (Tags)
                     Wrap(
                       spacing: 12,
                       runSpacing: 10,
@@ -128,13 +119,11 @@ class PlaceDetailsScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 30),
-                    // الوصف
                     const Text(
                       "A serene retreat nestled deep within the bamboo groves of Arashiyama. Designed for those seeking a moment of absolute stillness, the sanctuary's minimalist architecture harmonizes with the rhythmic sway of the trees. It perfectly matches your preference for tranquil, low-density locations.",
                       style: TextStyle(color: Colors.black87, fontSize: 15, height: 1.7),
                     ),
                     const SizedBox(height: 30),
-                    // معلومات سريعة
                     Row(
                       children: [
                         Icon(Icons.access_time, size: 18, color: Colors.grey.shade400),
@@ -149,7 +138,6 @@ class PlaceDetailsScreen extends StatelessWidget {
                     const SizedBox(height: 45),
                     const Text("What people are saying", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 25),
-                    // المراجعات
                     _buildReviewCard("ELENA S.", "I've never felt more at peace. The way the light hits the moss gardens at sunrise is just transformative."),
                     const SizedBox(height: 25),
                     _buildReviewCard("MARCUS T.", "Actually a hidden gem. Zero tourists when I went on a Tuesday morning. Perfect for reflection."),
@@ -158,8 +146,6 @@ class PlaceDetailsScreen extends StatelessWidget {
               );
             },
           ),
-
-          // 4. الزر السفلي (plan it) لفتح الخريطة
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -168,7 +154,7 @@ class PlaceDetailsScreen extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.white.withValues(alpha: 0), Colors.white.withValues(alpha: 0.9), Colors.white],
+                  colors: [Colors.white.withOpacity(0), Colors.white.withOpacity(0.9), Colors.white],
                 ),
               ),
               child: ElevatedButton.icon(
@@ -182,7 +168,7 @@ class PlaceDetailsScreen extends StatelessWidget {
                   minimumSize: const Size(200, 60),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   elevation: 5,
-                  shadowColor: const Color(0xFF6D8B6D).withValues(alpha: 0.4),
+                  shadowColor: const Color(0xFF6D8B6D).withOpacity(0.4),
                 ),
               ),
             ),
@@ -201,7 +187,7 @@ class PlaceDetailsScreen extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             padding: EdgeInsets.all(isSmall ? 10 : 12),
-            decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.2), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.2), shape: BoxShape.circle),
             child: Icon(icon, size: isSmall ? 18 : 22, color: Colors.white),
           ),
         ),
@@ -212,7 +198,7 @@ class PlaceDetailsScreen extends StatelessWidget {
   Widget _buildTag(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(color: const Color(0xFF6D8B6D).withValues(alpha: 0.08), borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(color: const Color(0xFF6D8B6D).withOpacity(0.08), borderRadius: BorderRadius.circular(15)),
       child: Text(label, style: const TextStyle(color: Color(0xFF6D8B6D), fontSize: 13, fontWeight: FontWeight.bold)),
     );
   }
