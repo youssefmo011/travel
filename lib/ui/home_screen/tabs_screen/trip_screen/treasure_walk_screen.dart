@@ -16,7 +16,7 @@ class _TreasureWalkScreenState extends State<TreasureWalkScreen> {
 
   final List<Map<String, String>> stepsData = [
     {"title": "Walk of Cairo", "image": "assets/images/walk of cairo.jpg", "desc": "Find the entrance to start your journey."},
-    {"title": "koffee kulture", "image": "assets/images/coffee culture.jpg", "desc": "Locate the coffee shop to unlock the next clue."},
+    {"title": "koffee kulture", "image": "assets/images/koffee kulture.jpg", "desc": "Locate the coffee shop to unlock the next clue."},
     {"title": "Lu Caffe", "image": "assets/images/lu caffe.jpg", "desc": "The final destination is waiting for you!"},
   ];
 
